@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>StudyHub - Notes & Store</title>
 
-  <!-- Firebase Realtime Database SDKs -->
+  <!-- Firebase Realtime Database & Auth SDKs -->
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
@@ -44,6 +44,7 @@
 
     .content-box { flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 10px; }
     .filters-bar { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; }
+    .filters-bar::-webkit-scrollbar { display: none; }
     .filter-chip { background: #ffffff; border: 1px solid #d1d5db; border-radius: 16px; padding: 4px 10px; font-size: 11.5px; font-weight: 500; white-space: nowrap; cursor: pointer; }
     .filter-chip.active { background: var(--primary); color: #fff; border-color: var(--primary); }
 
@@ -70,14 +71,24 @@
 
     .modal-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: flex-end; z-index: 100; }
     .modal-overlay.active { display: flex; }
-    .modal-card { background: #fff; width: 100%; border-top-left-radius: 20px; border-top-right-radius: 20px; padding: 16px; display: flex; flex-direction: column; gap: 10px; max-height: 85vh; overflow-y: auto; }
+    .modal-card { background: #fff; width: 100%; border-top-left-radius: 20px; border-top-right-radius: 20px; padding: 16px; display: flex; flex-direction: column; gap: 10px; max-height: 88vh; overflow-y: auto; }
+    
+    .coupon-box { display: flex; gap: 6px; margin: 4px 0; }
+    .btn-apply { background: #0284c7; color: #fff; border: none; border-radius: 6px; padding: 0 12px; font-size: 12px; font-weight: 600; cursor: pointer; }
+
     .qr-container { text-align: center; background: #f8fafc; padding: 10px; border-radius: 10px; border: 1px dashed #cbd5e1; }
-    .qr-img { width: 170px; height: 170px; margin: 6px auto; display: block; }
+    .qr-img { width: 160px; height: 160px; margin: 6px auto; display: block; }
     .upi-btn { padding: 7px 12px; background: #e0f2fe; color: #0369a1; border-radius: 6px; font-size: 12px; font-weight: 700; text-decoration: none; text-align: center; display: block; margin: 4px 0; }
     
-    table.req-table { width: 100%; border-collapse: collapse; font-size: 11.5px; margin-top: 6px; }
-    table.req-table th, table.req-table td { border: 1px solid #e2e8f0; padding: 6px; text-align: left; }
+    table.req-table { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 6px; }
+    table.req-table th, table.req-table td { border: 1px solid #e2e8f0; padding: 6px; text-align: left; vertical-align: top; }
     table.req-table th { background: #f8fafc; }
+    .btn-view-ss { background: #0284c7; color: #fff; border: none; border-radius: 4px; padding: 3px 6px; font-size: 10px; cursor: pointer; }
+
+    /* Screenshot Modal View */
+    .image-viewer-modal { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 200; padding: 14px; }
+    .image-viewer-modal.active { display: flex; flex-direction: column; }
+    .image-viewer-modal img { max-width: 100%; max-height: 80vh; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); object-fit: contain; }
   </style>
 </head>
 <body>
@@ -92,7 +103,7 @@
         </div>
       </div>
       <div class="header-user-badge">
-        <button class="auth-btn-small" id="googleAuthBtn" onclick="handleGoogleAuth()">Sign In</button>
+        <button class="auth-btn-small" id="googleAuthBtn" onclick="handleAuthChoice()">Sign In</button>
         <button class="auth-btn-small" id="adminToggleBtn" onclick="toggleAdminPrompt()">Admin</button>
       </div>
     </header>
@@ -103,6 +114,7 @@
       <button class="tab-btn" id="tabAdminBtn" style="display: none;" onclick="switchTab('admin')">Admin Panel</button>
     </nav>
 
+    <!-- 1. Store View -->
     <main class="content-box" id="viewStore">
       <div class="filters-bar">
         <button class="filter-chip active" onclick="applyCategoryFilter('all', this)">All</button>
@@ -114,13 +126,36 @@
       </div>
     </main>
 
+    <!-- 2. My Notes View -->
     <main class="content-box" id="viewOrders" style="display: none;">
       <h3 style="font-size: 14px;">Aapke Khareede Huye Notes</h3>
-      <p style="font-size: 11.5px; color: var(--text-muted);">Ye hamesha aapki Google ID par saved rahenge.</p>
+      <p style="font-size: 11.5px; color: var(--text-muted);">Ye hamesha aapke account par saved rahenge.</p>
       <div id="unlockedContainer" style="display: flex; flex-direction: column; gap: 8px; margin-top: 6px;"></div>
     </main>
 
+    <!-- 3. Admin View -->
     <main class="content-box" id="viewAdmin" style="display: none;">
+      
+      <!-- Coupon Manager -->
+      <div class="admin-card">
+        <h3>🎟️ Create Discount Coupon Code</h3>
+        <div class="form-group">
+          <label>Coupon Code (e.g. ANKIT50):</label>
+          <input type="text" id="couponCodeInput" class="form-input" placeholder="ANKIT50" style="text-transform: uppercase;">
+        </div>
+        <div class="form-group">
+          <label>Discount Percentage (% off):</label>
+          <input type="number" id="couponPercentInput" class="form-input" placeholder="e.g. 50 (1 to 100)" min="1" max="100">
+        </div>
+        <button class="btn-submit" style="background:#0284c7;" onclick="createCouponCode()">Create Coupon</button>
+        
+        <div style="margin-top: 10px;">
+          <label style="font-size: 11.5px; font-weight: 600; color: var(--text-muted);">Active Coupons:</label>
+          <div id="activeCouponsList" style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px;"></div>
+        </div>
+      </div>
+
+      <!-- UPI Settings -->
       <div class="admin-card">
         <h3>💳 Admin UPI Settings</h3>
         <div class="form-group">
@@ -134,6 +169,7 @@
         <button class="btn-submit" onclick="saveAdminUpiSettings()">Save UPI Details</button>
       </div>
 
+      <!-- Add Material -->
       <div class="admin-card">
         <h3>➕ Add New Note / Sample Paper</h3>
         <div class="form-group">
@@ -166,30 +202,60 @@
         <button class="btn-submit" onclick="uploadMaterialToFirebase()">Publish Note</button>
       </div>
 
+      <!-- Payment Verifications with Screenshot -->
       <div class="admin-card">
-        <h3>📋 Student Payment Approvals</h3>
+        <h3>📋 Student Payment Approvals & Proofs</h3>
         <div id="paymentRequestsBox"></div>
       </div>
     </main>
 
+    <!-- Payment Sheet Modal -->
     <div class="modal-overlay" id="payModal">
       <div class="modal-card">
         <h3 id="payModalTitle" style="font-size: 15px;">Complete Payment</h3>
-        <p style="font-size: 12.5px; color: var(--text-muted);" id="payModalPrice"></p>
-        <div class="qr-container">
+        
+        <!-- Coupon Section -->
+        <div style="background: #f1f5f9; padding: 8px 10px; border-radius: 8px;">
+          <label style="font-size: 11px; font-weight: 700; color: #475569;">Have a Coupon Code?</label>
+          <div class="coupon-box">
+            <input type="text" id="userCouponInput" class="form-input" placeholder="Enter Code" style="text-transform:uppercase; margin:0;">
+            <button class="btn-apply" onclick="applyCouponCode()">Apply</button>
+          </div>
+          <p id="couponFeedback" style="font-size: 11px; margin-top: 3px; font-weight: 600;"></p>
+        </div>
+
+        <p style="font-size: 13px; font-weight: 700; color: #16a34a;" id="payModalPrice"></p>
+
+        <!-- QR Box -->
+        <div class="qr-container" id="qrContainer">
           <p style="font-size: 11.5px; font-weight: 600;">Scan QR Code to Pay via UPI:</p>
           <img id="modalQrImg" class="qr-img" src="" alt="QR">
           <p style="font-size: 11px; color: var(--text-muted);" id="modalUpiText"></p>
         </div>
+
         <a id="modalDirectPayLink" href="#" class="upi-btn">Direct Pay via UPI</a>
+
         <div class="form-group" style="margin-top: 4px;">
-          <label>Payment ke baad 12-digit UTR Number dalein:</label>
+          <label>1. Payment ke baad 12-digit UTR Number dalein:</label>
           <input type="text" id="utrCodeInput" class="form-input" placeholder="Enter UTR Number">
         </div>
-        <button class="btn-submit" style="background: #16a34a;" onclick="submitUtrProof()">Submit for Instant Unlock</button>
+
+        <div class="form-group">
+          <label>2. Payment Screenshot Upload karein:</label>
+          <input type="file" id="ssFileInput" accept="image/*" class="form-input" style="padding: 5px;">
+        </div>
+
+        <button class="btn-submit" style="background: #16a34a;" onclick="submitUtrProof()">Submit Proof & Unlock</button>
         <button class="auth-btn-small" style="color:#000; border:1px solid #ccc; width:100%; padding:8px; margin-top:2px;" onclick="closeModal()">Cancel</button>
       </div>
     </div>
+
+    <!-- Image Viewer Modal for Admin -->
+    <div class="image-viewer-modal" id="imageViewerModal" onclick="closeImageViewer()">
+      <img id="previewModalImg" src="" alt="Screenshot">
+      <button class="auth-btn-small" style="background:#fff; color:#000; margin-top:12px; padding:8px 16px;">Close Preview</button>
+    </div>
+
   </div>
 
   <script>
@@ -205,41 +271,74 @@
 
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
-    const rtdb = firebase.database(); // Using Realtime Database (jo pehle se enabled hai)
+    const rtdb = firebase.database();
 
     let currentUser = null;
     let isAdminLoggedIn = false;
     let activeFilter = "all";
     let allMaterialsCache = [];
     let userPurchasesCache = [];
+    let activeCouponsCache = {};
     let pendingBuyItem = null;
+    let currentDiscountedAmount = 0;
+    let appliedCouponName = "";
+
+    // Auth handler
+    auth.getRedirectResult().then((result) => {
+      if (result && result.user) setupUserSession(result.user);
+    }).catch((err) => console.warn(err.message));
 
     auth.onAuthStateChanged((user) => {
       if (user) {
-        currentUser = user;
-        document.getElementById("userStatusLine").textContent = user.displayName || user.email || "Logged In";
-        document.getElementById("googleAuthBtn").textContent = "Sign Out";
-        listenToUserPurchases(user.uid);
+        setupUserSession(user);
       } else {
-        currentUser = null;
-        document.getElementById("userStatusLine").textContent = "Guest (Not Signed In)";
-        document.getElementById("googleAuthBtn").textContent = "Sign In";
-        userPurchasesCache = [];
-        renderStoreUI();
-        renderUnlockedUI();
+        const savedGuest = localStorage.getItem("study_guest_user");
+        if (savedGuest) {
+          setupUserSession(JSON.parse(savedGuest));
+        } else {
+          currentUser = null;
+          document.getElementById("userStatusLine").textContent = "Guest (Not Signed In)";
+          document.getElementById("googleAuthBtn").textContent = "Sign In";
+          userPurchasesCache = [];
+          renderStoreUI();
+          renderUnlockedUI();
+        }
       }
     });
 
-    async function handleGoogleAuth() {
+    function setupUserSession(user) {
+      currentUser = user;
+      document.getElementById("userStatusLine").textContent = user.displayName || user.email || user.name || "Logged In";
+      document.getElementById("googleAuthBtn").textContent = "Sign Out";
+      listenToUserPurchases(user.uid);
+    }
+
+    async function handleAuthChoice() {
       if (currentUser) {
-        if (confirm("Sign out karna chahte hain?")) await auth.signOut();
-      } else {
+        if (confirm("Sign out karna chahte hain?")) {
+          localStorage.removeItem("study_guest_user");
+          await auth.signOut();
+          location.reload();
+        }
+        return;
+      }
+
+      const choice = prompt("Login Option chunein:\n1. Type '1' - Google Sign-In\n2. Type '2' - Fast Student Name Login (Direct)", "2");
+
+      if (choice === "1") {
         const provider = new firebase.auth.GoogleAuthProvider();
         try {
-          await auth.signInWithPopup(provider);
-        } catch (e) {
           await auth.signInWithRedirect(provider);
+        } catch (e) {
+          alert("Option 2 use karein.");
         }
+      } else if (choice === "2") {
+        const name = prompt("Apna Naam ya Roll Number dalein:");
+        if (!name || name.trim() === "") return;
+        const fakeUid = "student_" + name.trim().toLowerCase().replace(/\s+/g, "_");
+        const guestObj = { uid: fakeUid, displayName: name.trim(), email: name.trim() + "@student.in" };
+        localStorage.setItem("study_guest_user", JSON.stringify(guestObj));
+        setupUserSession(guestObj);
       }
     }
 
@@ -296,6 +395,13 @@
         userPurchasesCache = val ? Object.keys(val) : [];
         renderStoreUI();
         renderUnlockedUI();
+      });
+    }
+
+    function listenToCoupons() {
+      rtdb.ref("coupons").on("value", (snapshot) => {
+        activeCouponsCache = snapshot.val() || {};
+        renderAdminCoupons();
       });
     }
 
@@ -371,56 +477,167 @@
       renderStoreUI();
     }
 
+    // Checkout Flow
     function triggerBuy(itemId) {
       if (!currentUser) {
-        alert("Pehle Google Sign In karein!");
-        handleGoogleAuth();
+        alert("Pehle Sign In karein!");
+        handleAuthChoice();
         return;
       }
 
       pendingBuyItem = allMaterialsCache.find(it => it.id === itemId);
       if (!pendingBuyItem) return;
 
+      currentDiscountedAmount = pendingBuyItem.price;
+      appliedCouponName = "";
+      document.getElementById("userCouponInput").value = "";
+      document.getElementById("couponFeedback").textContent = "";
+
+      updateCheckoutUI();
+      document.getElementById("payModal").classList.add("active");
+    }
+
+    function updateCheckoutUI() {
       const upiId = localStorage.getItem("admin_upi_id") || "ankit@upi";
       const payeeName = localStorage.getItem("admin_payee_name") || "Ankit Kumar";
-      const amount = pendingBuyItem.price;
+      
+      document.getElementById("payModalTitle").textContent = pendingBuyItem.title;
+      
+      if (currentDiscountedAmount < pendingBuyItem.price) {
+        document.getElementById("payModalPrice").innerHTML = `Original: <strike style="color:#64748b;">₹${pendingBuyItem.price}</strike> ➔ Final: ₹${currentDiscountedAmount}`;
+      } else {
+        document.getElementById("payModalPrice").textContent = `Amount to Pay: ₹${currentDiscountedAmount}`;
+      }
 
-      const upiLink = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(payeeName)}&am=${amount}&cu=INR&tn=${encodeURIComponent(pendingBuyItem.title)}`;
+      const upiLink = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(payeeName)}&am=${currentDiscountedAmount}&cu=INR&tn=${encodeURIComponent(pendingBuyItem.title)}`;
       const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(upiLink)}`;
 
-      document.getElementById("payModalTitle").textContent = pendingBuyItem.title;
-      document.getElementById("payModalPrice").textContent = `Amount: ₹${amount}`;
       document.getElementById("modalQrImg").src = qrUrl;
       document.getElementById("modalUpiText").textContent = `UPI: ${upiId}`;
       document.getElementById("modalDirectPayLink").href = upiLink;
+    }
 
-      document.getElementById("payModal").classList.add("active");
+    // Apply Coupon Code
+    function applyCouponCode() {
+      const code = document.getElementById("userCouponInput").value.trim().toUpperCase();
+      const feedback = document.getElementById("couponFeedback");
+
+      if (!code) {
+        feedback.style.color = "red";
+        feedback.textContent = "Coupon code dalein!";
+        return;
+      }
+
+      if (activeCouponsCache && activeCouponsCache[code]) {
+        const discountPercent = activeCouponsCache[code].percent;
+        const discountAmount = Math.round((pendingBuyItem.price * discountPercent) / 100);
+        currentDiscountedAmount = Math.max(0, pendingBuyItem.price - discountAmount);
+        appliedCouponName = code;
+
+        feedback.style.color = "#16a34a";
+        feedback.textContent = `🎉 ${code} Applied! (${discountPercent}% OFF)`;
+        updateCheckoutUI();
+      } else {
+        feedback.style.color = "red";
+        feedback.textContent = "Invalid ya Expired Coupon Code!";
+      }
     }
 
     function closeModal() {
       document.getElementById("payModal").classList.remove("active");
       document.getElementById("utrCodeInput").value = "";
+      document.getElementById("ssFileInput").value = "";
     }
 
+    // Submit Proof with Base64 Screenshot
     async function submitUtrProof() {
       const utr = document.getElementById("utrCodeInput").value.trim();
-      if (!utr || utr.length < 4) return alert("Sahi UTR number dalein!");
+      const fileInput = document.getElementById("ssFileInput");
 
-      await rtdb.ref("orders").push({
-        userId: currentUser.uid,
-        userEmail: currentUser.email || "No Email",
-        materialId: pendingBuyItem.id,
-        materialTitle: pendingBuyItem.title,
-        amount: pendingBuyItem.price,
-        utr: utr,
-        timestamp: Date.now()
+      // 100% Free coupon direct unlock
+      if (currentDiscountedAmount === 0 && appliedCouponName) {
+        await rtdb.ref(`users/${currentUser.uid}/unlockedMaterials/${pendingBuyItem.id}`).set(true);
+        alert("100% Discount Coupon! Notes successfully unlock ho gaye.");
+        closeModal();
+        switchTab('orders');
+        return;
+      }
+
+      if (!utr || utr.length < 4) return alert("Sahi 12-digit UTR number dalein!");
+      if (!fileInput.files || fileInput.files.length === 0) return alert("Payment screenshot upload karna zaroori hai!");
+
+      const file = fileInput.files[0];
+      const reader = new FileReader();
+
+      reader.onload = async function(e) {
+        const base64Image = e.target.result;
+
+        await rtdb.ref("orders").push({
+          userId: currentUser.uid,
+          userEmail: currentUser.email || currentUser.displayName || "Student",
+          materialId: pendingBuyItem.id,
+          materialTitle: pendingBuyItem.title,
+          originalAmount: pendingBuyItem.price,
+          amountPaid: currentDiscountedAmount,
+          couponUsed: appliedCouponName || "None",
+          utr: utr,
+          screenshot: base64Image,
+          timestamp: Date.now()
+        });
+
+        // Instant access
+        await rtdb.ref(`users/${currentUser.uid}/unlockedMaterials/${pendingBuyItem.id}`).set(true);
+
+        alert("Payment Proof & Screenshot submit ho gaya! Notes unlock kar diye gaye hain.");
+        closeModal();
+        switchTab('orders');
+      };
+
+      reader.readAsDataURL(file);
+    }
+
+    // Admin Operations
+    async function createCouponCode() {
+      const code = document.getElementById("couponCodeInput").value.trim().toUpperCase();
+      const percent = parseInt(document.getElementById("couponPercentInput").value);
+
+      if (!code || isNaN(percent) || percent < 1 || percent > 100) {
+        return alert("Valid Code aur Percentage (1-100) dalein!");
+      }
+
+      await rtdb.ref(`coupons/${code}`).set({
+        code: code,
+        percent: percent,
+        createdAt: Date.now()
       });
 
-      await rtdb.ref(`users/${currentUser.uid}/unlockedMaterials/${pendingBuyItem.id}`).set(true);
+      document.getElementById("couponCodeInput").value = "";
+      document.getElementById("couponPercentInput").value = "";
+      alert(`Coupon ${code} (${percent}% OFF) successfully created!`);
+    }
 
-      alert("Payment proof submit ho gaya! Notes unlock ho gaye.");
-      closeModal();
-      switchTab('orders');
+    async function deleteCoupon(code) {
+      if (!confirm(`Delete coupon ${code}?`)) return;
+      await rtdb.ref(`coupons/${code}`).remove();
+    }
+
+    function renderAdminCoupons() {
+      const box = document.getElementById("activeCouponsList");
+      if (!box) return;
+      box.innerHTML = "";
+
+      if (!activeCouponsCache || Object.keys(activeCouponsCache).length === 0) {
+        box.innerHTML = `<span style="font-size:11px; color:#888;">Koi coupon active nahi hai.</span>`;
+        return;
+      }
+
+      Object.keys(activeCouponsCache).forEach(k => {
+        const c = activeCouponsCache[k];
+        const span = document.createElement("span");
+        span.style = "background:#e0f2fe; color:#0369a1; padding:3px 8px; border-radius:12px; font-size:11px; font-weight:700; display:inline-flex; align-items:center; gap:4px;";
+        span.innerHTML = `${c.code} (${c.percent}%) <b style="cursor:pointer; color:red;" onclick="deleteCoupon('${c.code}')">✕</b>`;
+        box.appendChild(span);
+      });
     }
 
     async function uploadMaterialToFirebase() {
@@ -458,11 +675,21 @@
       alert("UPI Settings Saved!");
     }
 
+    function openScreenshotPreview(base64Url) {
+      document.getElementById("previewModalImg").src = base64Url;
+      document.getElementById("imageViewerModal").classList.add("active");
+    }
+
+    function closeImageViewer() {
+      document.getElementById("imageViewerModal").classList.remove("active");
+    }
+
     function loadAdminData() {
       document.getElementById("adminUpiInput").value = localStorage.getItem("admin_upi_id") || "";
       document.getElementById("adminNameInput").value = localStorage.getItem("admin_payee_name") || "Ankit Kumar";
+      renderAdminCoupons();
 
-      rtdb.ref("orders").limitToLast(20).on("value", (snapshot) => {
+      rtdb.ref("orders").limitToLast(25).on("value", (snapshot) => {
         const box = document.getElementById("paymentRequestsBox");
         const val = snapshot.val();
         if (!val) {
@@ -470,10 +697,19 @@
           return;
         }
 
-        let html = `<table class="req-table"><thead><tr><th>Item</th><th>₹</th><th>User / UTR</th></tr></thead><tbody>`;
+        let html = `<table class="req-table"><thead><tr><th>Item</th><th>₹ Paid</th><th>UTR / User</th><th>Proof</th></tr></thead><tbody>`;
         Object.keys(val).reverse().forEach(key => {
           const d = val[key];
-          html += `<tr><td>${d.materialTitle}</td><td>₹${d.amount}</td><td>${d.userEmail}<br><strong>UTR: ${d.utr}</strong></td></tr>`;
+          const ssBtn = d.screenshot 
+            ? `<button class="btn-view-ss" onclick="openScreenshotPreview('${d.screenshot}')">View SS</button>` 
+            : `<span style="color:#aaa;">No SS</span>`;
+
+          html += `<tr>
+            <td>${d.materialTitle}</td>
+            <td>₹${d.amountPaid || d.amount} ${d.couponUsed && d.couponUsed !== 'None' ? '<br><small style="color:green;">('+d.couponUsed+')</small>' : ''}</td>
+            <td><strong>${d.utr}</strong><br><small>${d.userEmail}</small></td>
+            <td>${ssBtn}</td>
+          </tr>`;
         });
         html += `</tbody></table>`;
         box.innerHTML = html;
@@ -482,6 +718,7 @@
 
     window.onload = () => {
       listenToMaterials();
+      listenToCoupons();
     };
   </script>
 </body>
