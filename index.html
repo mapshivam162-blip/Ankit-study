@@ -48,7 +48,6 @@
     .filter-chip { background: #ffffff; border: 1px solid #d1d5db; border-radius: 16px; padding: 4px 10px; font-size: 11.5px; font-weight: 500; white-space: nowrap; cursor: pointer; }
     .filter-chip.active { background: var(--primary); color: #fff; border-color: var(--primary); }
 
-    /* Material Card with Thumbnail */
     .mat-card { background: #ffffff; border-radius: var(--radius); padding: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); display: flex; flex-direction: column; gap: 6px; }
     .mat-card-body { display: flex; gap: 10px; align-items: flex-start; }
     .mat-thumb { width: 75px; height: 85px; border-radius: 8px; object-fit: cover; background: #e2e8f0; flex-shrink: 0; }
@@ -63,13 +62,14 @@
     .mat-price { font-size: 14.5px; font-weight: 800; color: #16a34a; }
     .mat-title { font-size: 14px; font-weight: 700; color: var(--text); line-height: 1.3; }
     .mat-desc { font-size: 12px; color: var(--text-muted); line-height: 1.35; }
-    .mat-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 4px; padding-top: 6px; border-top: 1px solid #f1f5f9; }
+    .mat-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 4px; padding-top: 6px; border-top: 1px solid #f1f5f9; gap: 6px; flex-wrap: wrap; }
 
     .btn-buy { background: var(--primary); color: #fff; border: none; border-radius: 6px; padding: 6px 14px; font-size: 12px; font-weight: 600; cursor: pointer; }
     .btn-download { background: #16a34a; color: #fff; border: none; border-radius: 6px; padding: 6px 12px; font-size: 12px; font-weight: 600; text-decoration: none; display: inline-block; }
+    .btn-pending { background: #f59e0b; color: #fff; border: none; border-radius: 6px; padding: 6px 10px; font-size: 11.5px; font-weight: 600; }
     .btn-del { background: #fee2e2; color: #dc2626; border: none; border-radius: 6px; padding: 5px 8px; font-size: 11px; font-weight: 600; cursor: pointer; }
+    .btn-edit { background: #e0f2fe; color: #0284c7; border: none; border-radius: 6px; padding: 5px 8px; font-size: 11px; font-weight: 600; cursor: pointer; }
 
-    /* Admin View */
     .admin-card { background: #fff; padding: 12px; border-radius: var(--radius); box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 8px; }
     .admin-card h3 { font-size: 14px; margin-bottom: 8px; color: var(--wa-teal); }
     .form-group { display: flex; flex-direction: column; gap: 3px; margin-bottom: 8px; }
@@ -90,9 +90,14 @@
     .upi-btn { padding: 7px 12px; background: #e0f2fe; color: #0369a1; border-radius: 6px; font-size: 12px; font-weight: 700; text-decoration: none; text-align: center; display: block; margin: 4px 0; }
     
     table.req-table { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 6px; }
-    table.req-table th, table.req-table td { border: 1px solid #e2e8f0; padding: 6px; text-align: left; vertical-align: top; }
+    table.req-table th, table.req-table td { border: 1px solid #e2e8f0; padding: 6px; text-align: left; vertical-align: middle; }
     table.req-table th { background: #f8fafc; }
     .btn-view-ss { background: #0284c7; color: #fff; border: none; border-radius: 4px; padding: 3px 6px; font-size: 10px; cursor: pointer; }
+    .btn-approve { background: #16a34a; color: #fff; border: none; border-radius: 4px; padding: 4px 8px; font-size: 11px; font-weight: bold; cursor: pointer; }
+    .btn-reject { background: #dc2626; color: #fff; border: none; border-radius: 4px; padding: 4px 6px; font-size: 11px; cursor: pointer; }
+
+    .combo-items-box { border: 1px solid #cbd5e1; border-radius: 8px; padding: 8px; max-height: 140px; overflow-y: auto; background: #f8fafc; display: flex; flex-direction: column; gap: 6px; }
+    .combo-item-check { display: flex; align-items: center; gap: 8px; font-size: 12px; }
 
     .image-viewer-modal { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 200; padding: 14px; }
     .image-viewer-modal.active { display: flex; flex-direction: column; }
@@ -138,7 +143,7 @@
     <!-- 2. My Notes View -->
     <main class="content-box" id="viewOrders" style="display: none;">
       <h3 style="font-size: 14px;">Aapke Khareede Huye Notes</h3>
-      <p style="font-size: 11.5px; color: var(--text-muted);">Ye hamesha aapke account par saved rahenge.</p>
+      <p style="font-size: 11.5px; color: var(--text-muted);">Admin verify karne ke baad hi unlocked PDFs yahan dikhenge.</p>
       <div id="unlockedContainer" style="display: flex; flex-direction: column; gap: 8px; margin-top: 6px;"></div>
     </main>
 
@@ -149,38 +154,51 @@
       <div class="admin-card">
         <h3>➕ Add Study Material / Combo Pack</h3>
         <div class="form-group">
-          <label>Title (e.g. Math Complete Combo / Physics Ch-1):</label>
+          <label>Type / Package:</label>
+          <select id="newType" class="form-input" onchange="handleTypeChange()">
+            <option value="Notes">Single Notes (Individual)</option>
+            <option value="Combo">Combo Pack Offer (Select Multiple)</option>
+            <option value="Sample Paper">Sample Paper</option>
+          </select>
+        </div>
+
+        <!-- Combo Items Selector -->
+        <div class="form-group" id="comboSelectGroup" style="display: none;">
+          <label>Select items to include in this Combo:</label>
+          <div class="combo-items-box" id="comboItemsContainer"></div>
+        </div>
+
+        <div class="form-group">
+          <label>Title (e.g. Physics Ch-1 ya Complete Class 10 Combo):</label>
           <input type="text" id="newTitle" class="form-input" placeholder="Title likhein">
         </div>
         <div class="form-group">
-          <label>Subject (e.g. All Subjects / Math / Chemistry):</label>
+          <label>Subject (e.g. Math / Science / All in One):</label>
           <input type="text" id="newSub" class="form-input" placeholder="Subject">
-        </div>
-        <div class="form-group">
-          <label>Type / Package:</label>
-          <select id="newType" class="form-input">
-            <option value="Notes">Single Notes (₹12 style)</option>
-            <option value="Combo">Combo Pack Offer (₹30 style)</option>
-            <option value="Sample Paper">Sample Paper</option>
-          </select>
         </div>
         <div class="form-group">
           <label>Admin Custom Price (₹):</label>
           <input type="number" id="newPrice" class="form-input" placeholder="e.g. 12 ya 30 (Free ke liye 0 dalein)">
         </div>
         <div class="form-group">
-          <label>Subject Cover Photo / Thumbnail (Upload Image):</label>
+          <label>Thumbnail / Cover Photo (Upload Image):</label>
           <input type="file" id="newThumbFile" accept="image/*" class="form-input" style="padding: 5px;">
         </div>
-        <div class="form-group">
-          <label>PDF / Google Drive URL:</label>
+        <div class="form-group" id="pdfLinkGroup">
+          <label>PDF / Google Drive URL (Combo ke liye optional):</label>
           <input type="url" id="newUrl" class="form-input" placeholder="https://drive.google.com/...">
         </div>
         <div class="form-group">
           <label>Short Description:</label>
-          <input type="text" id="newDesc" class="form-input" placeholder="e.g. Complete 5 Chapters Bundle or Single Chapter Notes">
+          <input type="text" id="newDesc" class="form-input" placeholder="e.g. 3 Chapters Combo Bundle @ ₹30">
         </div>
         <button class="btn-submit" onclick="uploadMaterialToFirebase()">Publish Note / Combo</button>
+      </div>
+
+      <!-- Payment Approvals with Screenshot & Verification -->
+      <div class="admin-card">
+        <h3>📋 Student Payment Approvals & Proofs</h3>
+        <div id="paymentRequestsBox"></div>
       </div>
 
       <!-- Coupon Manager -->
@@ -214,12 +232,6 @@
           <input type="text" id="adminNameInput" class="form-input" placeholder="e.g. Ankit Kumar">
         </div>
         <button class="btn-submit" onclick="saveAdminUpiSettings()">Save UPI Details</button>
-      </div>
-
-      <!-- Payment Verifications -->
-      <div class="admin-card">
-        <h3>📋 Student Payment Approvals & Proofs</h3>
-        <div id="paymentRequestsBox"></div>
       </div>
     </main>
 
@@ -257,8 +269,38 @@
           <input type="file" id="ssFileInput" accept="image/*" class="form-input" style="padding: 5px;">
         </div>
 
-        <button class="btn-submit" style="background: #16a34a;" onclick="submitUtrProof()">Submit Proof & Unlock</button>
+        <button class="btn-submit" style="background: #16a34a;" onclick="submitUtrProof()">Submit Proof for Verification</button>
         <button class="auth-btn-small" style="color:#000; border:1px solid #ccc; width:100%; padding:8px; margin-top:2px;" onclick="closeModal()">Cancel</button>
+      </div>
+    </div>
+
+    <!-- Edit Material Modal -->
+    <div class="modal-overlay" id="editModal">
+      <div class="modal-card">
+        <h3 style="font-size: 15px;">✏️ Edit Material Details</h3>
+        <input type="hidden" id="editItemId">
+        <div class="form-group">
+          <label>Title:</label>
+          <input type="text" id="editTitle" class="form-input">
+        </div>
+        <div class="form-group">
+          <label>Subject:</label>
+          <input type="text" id="editSub" class="form-input">
+        </div>
+        <div class="form-group">
+          <label>Price (₹):</label>
+          <input type="number" id="editPrice" class="form-input">
+        </div>
+        <div class="form-group">
+          <label>PDF / Drive Link:</label>
+          <input type="url" id="editUrl" class="form-input">
+        </div>
+        <div class="form-group">
+          <label>Description:</label>
+          <input type="text" id="editDesc" class="form-input">
+        </div>
+        <button class="btn-submit" onclick="saveEditedMaterial()">Save Changes</button>
+        <button class="auth-btn-small" style="color:#000; border:1px solid #ccc; width:100%; padding:8px; margin-top:2px;" onclick="closeEditModal()">Cancel</button>
       </div>
     </div>
 
@@ -285,7 +327,6 @@
     const auth = firebase.auth();
     const rtdb = firebase.database();
 
-    // Enable Permanent Local Persistence for Automatic Login
     auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
 
     let currentUser = null;
@@ -293,12 +334,13 @@
     let activeFilter = "all";
     let allMaterialsCache = [];
     let userPurchasesCache = [];
+    let pendingPurchasesCache = [];
     let activeCouponsCache = {};
     let pendingBuyItem = null;
     let currentDiscountedAmount = 0;
     let appliedCouponName = "";
 
-    // Auto-Login Listener (Jab bhi app khulega, auto-login trigger hoga)
+    // Auto-Login Listener
     auth.onAuthStateChanged((user) => {
       if (user) {
         setupUserSession(user);
@@ -311,6 +353,7 @@
           document.getElementById("userStatusLine").textContent = "Guest (Not Signed In)";
           document.getElementById("googleAuthBtn").textContent = "Sign In";
           userPurchasesCache = [];
+          pendingPurchasesCache = [];
           renderStoreUI();
           renderUnlockedUI();
         }
@@ -322,6 +365,7 @@
       document.getElementById("userStatusLine").textContent = user.displayName || user.email || user.name || "Logged In";
       document.getElementById("googleAuthBtn").textContent = "Sign Out";
       listenToUserPurchases(user.uid);
+      listenToPendingOrders(user.uid);
     }
 
     async function handleAuthChoice() {
@@ -397,6 +441,7 @@
         }
         renderStoreUI();
         renderUnlockedUI();
+        populateComboCheckboxes();
       });
     }
 
@@ -409,10 +454,59 @@
       });
     }
 
+    function listenToPendingOrders(uid) {
+      rtdb.ref("orders").orderByChild("userId").equalTo(uid).on("value", (snapshot) => {
+        pendingPurchasesCache = [];
+        const val = snapshot.val();
+        if (val) {
+          Object.keys(val).forEach(k => {
+            if (val[k].status === "pending") {
+              pendingPurchasesCache.push(val[k].materialId);
+            }
+          });
+        }
+        renderStoreUI();
+      });
+    }
+
     function listenToCoupons() {
       rtdb.ref("coupons").on("value", (snapshot) => {
         activeCouponsCache = snapshot.val() || {};
         renderAdminCoupons();
+      });
+    }
+
+    function handleTypeChange() {
+      const type = document.getElementById("newType").value;
+      const comboGroup = document.getElementById("comboSelectGroup");
+      const pdfGroup = document.getElementById("pdfLinkGroup");
+      if (type === "Combo") {
+        comboGroup.style.display = "flex";
+        populateComboCheckboxes();
+      } else {
+        comboGroup.style.display = "none";
+      }
+    }
+
+    function populateComboCheckboxes() {
+      const container = document.getElementById("comboItemsContainer");
+      if (!container) return;
+      container.innerHTML = "";
+
+      const singles = allMaterialsCache.filter(m => m.type !== "Combo");
+      if (singles.length === 0) {
+        container.innerHTML = `<span style="font-size:11px; color:#888;">Pehle single notes publish karein.</span>`;
+        return;
+      }
+
+      singles.forEach(m => {
+        const div = document.createElement("div");
+        div.className = "combo-item-check";
+        div.innerHTML = `
+          <input type="checkbox" value="${m.id}" class="combo-check-input" id="chk_${m.id}">
+          <label for="chk_${m.id}">${m.title} (₹${m.price})</label>
+        `;
+        container.appendChild(div);
       });
     }
 
@@ -426,12 +520,13 @@
       });
 
       if (filtered.length === 0) {
-        container.innerHTML = `<p style="text-align:center; font-size:12px; color:#667781; padding:20px;">Abhi koi study material add nahi hua hai. Admin panel se add karein.</p>`;
+        container.innerHTML = `<p style="text-align:center; font-size:12px; color:#667781; padding:20px;">Abhi koi study material add nahi hua hai.</p>`;
         return;
       }
 
       filtered.forEach(item => {
         const isUnlocked = userPurchasesCache.includes(item.id) || item.price === 0;
+        const isPending = pendingPurchasesCache.includes(item.id);
         const defaultThumb = "https://images.unsplash.com/photo-1497633762265-9d179a990aa6?w=200&auto=format&fit=crop&q=60";
         const thumbSrc = item.thumbnail || defaultThumb;
 
@@ -441,9 +536,17 @@
 
         const card = document.createElement("div");
         card.className = "mat-card";
+
+        let actionButton = `<button class="btn-buy" onclick="triggerBuy('${item.id}')">Buy (₹${item.price})</button>`;
+        if (isUnlocked) {
+          actionButton = `<a href="${item.link || '#'}" target="_blank" class="btn-download">📥 Open PDF</a>`;
+        } else if (isPending) {
+          actionButton = `<span class="btn-pending">⏳ Verification Pending</span>`;
+        }
+
         card.innerHTML = `
           <div class="mat-card-body">
-            <img src="${thumbSrc}" class="mat-thumb" alt="Subject Cover">
+            <img src="${thumbSrc}" class="mat-thumb" alt="Cover">
             <div class="mat-details">
               <div class="mat-header">
                 <span class="badge ${badgeClass}">${item.type === 'Combo' ? '🔥 COMBO' : item.type} • ${item.subject}</span>
@@ -454,11 +557,10 @@
             </div>
           </div>
           <div class="mat-footer">
-            ${isUnlocked 
-              ? `<a href="${item.link}" target="_blank" class="btn-download">📥 Open PDF</a>` 
-              : `<button class="btn-buy" onclick="triggerBuy('${item.id}')">Buy (₹${item.price})</button>`
-            }
-            ${isAdminLoggedIn ? `<button class="btn-del" onclick="deleteMaterial('${item.id}')">Delete</button>` : ''}
+            ${actionButton}
+            <div>
+              ${isAdminLoggedIn ? `<button class="btn-edit" onclick="openEditModal('${item.id}')">✏️ Edit</button> <button class="btn-del" onclick="deleteMaterial('${item.id}')">Delete</button>` : ''}
+            </div>
           </div>
         `;
         container.appendChild(card);
@@ -477,7 +579,7 @@
       const unlockedItems = allMaterialsCache.filter(it => userPurchasesCache.includes(it.id));
 
       if (unlockedItems.length === 0) {
-        container.innerHTML = `<p style="text-align:center; font-size:12px; color:#667781; padding:20px;">Aapne abhi tak koi material unlock nahi kiya hai.</p>`;
+        container.innerHTML = `<p style="text-align:center; font-size:12px; color:#667781; padding:20px;">Aapka koi verified unlocked material nahi hai. (Payment verify hone par unlock hoga)</p>`;
         return;
       }
 
@@ -487,7 +589,7 @@
         card.innerHTML = `
           <span class="badge badge-notes">${item.type} • ${item.subject}</span>
           <h4 class="mat-title">${item.title}</h4>
-          <a href="${item.link}" target="_blank" class="btn-download" style="text-align:center; margin-top:4px;">📥 Download PDF</a>
+          <a href="${item.link}" target="_blank" class="btn-download" style="text-align:center; margin-top:4px;">📥 Download Verified PDF</a>
         `;
         container.appendChild(card);
       });
@@ -571,10 +673,12 @@
       document.getElementById("ssFileInput").value = "";
     }
 
+    // Submit UTR Proof - Status set to PENDING (Strict Admin Verification)
     async function submitUtrProof() {
       const utr = document.getElementById("utrCodeInput").value.trim();
       const fileInput = document.getElementById("ssFileInput");
 
+      // Free Coupon unlock directly
       if (currentDiscountedAmount === 0 && appliedCouponName) {
         await rtdb.ref(`users/${currentUser.uid}/unlockedMaterials/${pendingBuyItem.id}`).set(true);
         alert("100% Discount Coupon! Notes successfully unlock ho gaye.");
@@ -602,35 +706,47 @@
           couponUsed: appliedCouponName || "None",
           utr: utr,
           screenshot: base64Image,
+          status: "pending", // Waiting for Admin
           timestamp: Date.now()
         });
 
-        await rtdb.ref(`users/${currentUser.uid}/unlockedMaterials/${pendingBuyItem.id}`).set(true);
-
-        alert("Payment Proof submit ho gaya! Notes unlock kar diye gaye hain.");
+        alert("Payment Proof submit ho gaya! Admin verify karke unlock karega.");
         closeModal();
-        switchTab('orders');
+        renderStoreUI();
       };
 
       reader.readAsDataURL(file);
     }
 
-    // Admin Operations: Material + Thumbnail Upload
+    // Admin Operations: Publish Material & Smart Combo
     async function uploadMaterialToFirebase() {
+      const type = document.getElementById("newType").value;
       const title = document.getElementById("newTitle").value.trim();
       const subject = document.getElementById("newSub").value.trim() || "General";
-      const type = document.getElementById("newType").value;
       const price = parseInt(document.getElementById("newPrice").value) || 0;
-      const link = document.getElementById("newUrl").value.trim();
       const desc = document.getElementById("newDesc").value.trim();
+      let link = document.getElementById("newUrl").value.trim();
       const thumbFile = document.getElementById("newThumbFile").files[0];
 
-      if (!title || !link) return alert("Title aur PDF link dono zaroori hain!");
+      let bundledItemIds = [];
+      if (type === "Combo") {
+        document.querySelectorAll(".combo-check-input:checked").forEach(cb => {
+          bundledItemIds.push(cb.value);
+        });
+        if (bundledItemIds.length === 0) {
+          return alert("Combo banane ke liye kam se kam 1 material select karein!");
+        }
+      } else {
+        if (!link) return alert("PDF link zaroori hai!");
+      }
+
+      if (!title) return alert("Title zaroori hai!");
 
       const saveItem = async (thumbBase64) => {
         await rtdb.ref("materials").push({
           title, subject, type, price, link, desc,
           thumbnail: thumbBase64 || "",
+          bundledItems: bundledItemIds,
           createdAt: Date.now()
         });
 
@@ -638,7 +754,7 @@
         document.getElementById("newUrl").value = "";
         document.getElementById("newDesc").value = "";
         document.getElementById("newThumbFile").value = "";
-        alert("Material with Thumbnail Save ho gaya!");
+        alert("Published Successfully!");
         switchTab('store');
       };
 
@@ -651,9 +767,73 @@
       }
     }
 
+    // Material Edit Flow
+    function openEditModal(id) {
+      const item = allMaterialsCache.find(m => m.id === id);
+      if (!item) return;
+
+      document.getElementById("editItemId").value = item.id;
+      document.getElementById("editTitle").value = item.title;
+      document.getElementById("editSub").value = item.subject;
+      document.getElementById("editPrice").value = item.price;
+      document.getElementById("editUrl").value = item.link || "";
+      document.getElementById("editDesc").value = item.desc || "";
+
+      document.getElementById("editModal").classList.add("active");
+    }
+
+    function closeEditModal() {
+      document.getElementById("editModal").classList.remove("active");
+    }
+
+    async function saveEditedMaterial() {
+      const id = document.getElementById("editItemId").value;
+      const title = document.getElementById("editTitle").value.trim();
+      const subject = document.getElementById("editSub").value.trim();
+      const price = parseInt(document.getElementById("editPrice").value) || 0;
+      const link = document.getElementById("editUrl").value.trim();
+      const desc = document.getElementById("editDesc").value.trim();
+
+      if (!title) return alert("Title zaroori hai!");
+
+      await rtdb.ref(`materials/${id}`).update({
+        title, subject, price, link, desc
+      });
+
+      alert("Material Updated Successfully!");
+      closeEditModal();
+    }
+
     async function deleteMaterial(id) {
       if (!confirm("Delete karna chahte hain?")) return;
       await rtdb.ref(`materials/${id}`).remove();
+    }
+
+    // Admin Verification Operations: Approve or Reject Payment
+    async function approveOrder(orderKey, userId, materialId) {
+      if (!confirm("Payment verify karke unlock karein?")) return;
+
+      const material = allMaterialsCache.find(m => m.id === materialId);
+      
+      // Unlock main item
+      await rtdb.ref(`users/${userId}/unlockedMaterials/${materialId}`).set(true);
+
+      // Agar Combo hai, toh uske andar ke saare bundled items bhi unlock karo
+      if (material && material.type === "Combo" && material.bundledItems) {
+        for (let subId of material.bundledItems) {
+          await rtdb.ref(`users/${userId}/unlockedMaterials/${subId}`).set(true);
+        }
+      }
+
+      // Order status set to approved
+      await rtdb.ref(`orders/${orderKey}`).update({ status: "approved" });
+      alert("Order Approved & Material Unlocked for Student!");
+    }
+
+    async function rejectOrder(orderKey) {
+      if (!confirm("Order reject karna chahte hain?")) return;
+      await rtdb.ref(`orders/${orderKey}`).update({ status: "rejected" });
+      alert("Order Rejected!");
     }
 
     async function createCouponCode() {
@@ -672,7 +852,7 @@
 
       document.getElementById("couponCodeInput").value = "";
       document.getElementById("couponPercentInput").value = "";
-      alert(`Coupon ${code} (${percent}% OFF) successfully created!`);
+      alert(`Coupon ${code} created!`);
     }
 
     async function deleteCoupon(code) {
@@ -722,7 +902,8 @@
       document.getElementById("adminNameInput").value = localStorage.getItem("admin_payee_name") || "Ankit Kumar";
       renderAdminCoupons();
 
-      rtdb.ref("orders").limitToLast(25).on("value", (snapshot) => {
+      // Orders verification list
+      rtdb.ref("orders").limitToLast(30).on("value", (snapshot) => {
         const box = document.getElementById("paymentRequestsBox");
         const val = snapshot.val();
         if (!val) {
@@ -730,18 +911,28 @@
           return;
         }
 
-        let html = `<table class="req-table"><thead><tr><th>Item</th><th>₹ Paid</th><th>UTR / User</th><th>Proof</th></tr></thead><tbody>`;
+        let html = `<table class="req-table"><thead><tr><th>Item</th><th>UTR / User</th><th>Proof</th><th>Action</th></tr></thead><tbody>`;
         Object.keys(val).reverse().forEach(key => {
           const d = val[key];
           const ssBtn = d.screenshot 
             ? `<button class="btn-view-ss" onclick="openScreenshotPreview('${d.screenshot}')">View SS</button>` 
             : `<span style="color:#aaa;">No SS</span>`;
 
+          let statusBadge = `<span style="color:#16a34a; font-weight:bold;">Approved</span>`;
+          if (d.status === "pending") {
+            statusBadge = `
+              <button class="btn-approve" onclick="approveOrder('${key}', '${d.userId}', '${d.materialId}')">Approve</button>
+              <button class="btn-reject" onclick="rejectOrder('${key}')">Reject</button>
+            `;
+          } else if (d.status === "rejected") {
+            statusBadge = `<span style="color:#dc2626;">Rejected</span>`;
+          }
+
           html += `<tr>
-            <td>${d.materialTitle}</td>
-            <td>₹${d.amountPaid || d.amount} ${d.couponUsed && d.couponUsed !== 'None' ? '<br><small style="color:green;">('+d.couponUsed+')</small>' : ''}</td>
+            <td><strong>${d.materialTitle}</strong><br>₹${d.amountPaid || d.amount}</td>
             <td><strong>${d.utr}</strong><br><small>${d.userEmail}</small></td>
             <td>${ssBtn}</td>
+            <td>${statusBadge}</td>
           </tr>`;
         });
         html += `</tbody></table>`;
