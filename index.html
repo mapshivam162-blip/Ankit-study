@@ -48,20 +48,28 @@
     .filter-chip { background: #ffffff; border: 1px solid #d1d5db; border-radius: 16px; padding: 4px 10px; font-size: 11.5px; font-weight: 500; white-space: nowrap; cursor: pointer; }
     .filter-chip.active { background: var(--primary); color: #fff; border-color: var(--primary); }
 
-    .mat-card { background: #ffffff; border-radius: var(--radius); padding: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); display: flex; flex-direction: column; gap: 6px; }
+    /* Material Card with Thumbnail */
+    .mat-card { background: #ffffff; border-radius: var(--radius); padding: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); display: flex; flex-direction: column; gap: 6px; }
+    .mat-card-body { display: flex; gap: 10px; align-items: flex-start; }
+    .mat-thumb { width: 75px; height: 85px; border-radius: 8px; object-fit: cover; background: #e2e8f0; flex-shrink: 0; }
+    .mat-details { flex: 1; display: flex; flex-direction: column; gap: 3px; }
     .mat-header { display: flex; justify-content: space-between; align-items: center; }
-    .badge { font-size: 10.5px; font-weight: 700; padding: 2px 7px; border-radius: 6px; text-transform: uppercase; }
+    
+    .badge { font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 5px; text-transform: uppercase; }
     .badge-notes { background: #dbeafe; color: #1e40af; }
     .badge-sample { background: #fef3c7; color: #92400e; }
-    .mat-price { font-size: 14px; font-weight: 800; color: #16a34a; }
-    .mat-title { font-size: 15px; font-weight: 700; color: var(--text); }
-    .mat-desc { font-size: 12.5px; color: var(--text-muted); line-height: 1.4; }
+    .badge-combo { background: #fce7f3; color: #be185d; border: 1px solid #f472b6; }
+
+    .mat-price { font-size: 14.5px; font-weight: 800; color: #16a34a; }
+    .mat-title { font-size: 14px; font-weight: 700; color: var(--text); line-height: 1.3; }
+    .mat-desc { font-size: 12px; color: var(--text-muted); line-height: 1.35; }
     .mat-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 4px; padding-top: 6px; border-top: 1px solid #f1f5f9; }
 
-    .btn-buy { background: var(--primary); color: #fff; border: none; border-radius: 6px; padding: 7px 14px; font-size: 12.5px; font-weight: 600; cursor: pointer; }
-    .btn-download { background: #16a34a; color: #fff; border: none; border-radius: 6px; padding: 7px 12px; font-size: 12.5px; font-weight: 600; text-decoration: none; display: inline-block; }
+    .btn-buy { background: var(--primary); color: #fff; border: none; border-radius: 6px; padding: 6px 14px; font-size: 12px; font-weight: 600; cursor: pointer; }
+    .btn-download { background: #16a34a; color: #fff; border: none; border-radius: 6px; padding: 6px 12px; font-size: 12px; font-weight: 600; text-decoration: none; display: inline-block; }
     .btn-del { background: #fee2e2; color: #dc2626; border: none; border-radius: 6px; padding: 5px 8px; font-size: 11px; font-weight: 600; cursor: pointer; }
 
+    /* Admin View */
     .admin-card { background: #fff; padding: 12px; border-radius: var(--radius); box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 8px; }
     .admin-card h3 { font-size: 14px; margin-bottom: 8px; color: var(--wa-teal); }
     .form-group { display: flex; flex-direction: column; gap: 3px; margin-bottom: 8px; }
@@ -69,6 +77,7 @@
     .form-input { padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; outline: none; }
     .btn-submit { width: 100%; background: var(--wa-teal); color: #fff; border: none; border-radius: 6px; padding: 9px; font-size: 13px; font-weight: 600; cursor: pointer; }
 
+    /* Modal Sheet */
     .modal-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: flex-end; z-index: 100; }
     .modal-overlay.active { display: flex; }
     .modal-card { background: #fff; width: 100%; border-top-left-radius: 20px; border-top-right-radius: 20px; padding: 16px; display: flex; flex-direction: column; gap: 10px; max-height: 88vh; overflow-y: auto; }
@@ -85,7 +94,6 @@
     table.req-table th { background: #f8fafc; }
     .btn-view-ss { background: #0284c7; color: #fff; border: none; border-radius: 4px; padding: 3px 6px; font-size: 10px; cursor: pointer; }
 
-    /* Screenshot Modal View */
     .image-viewer-modal { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 200; padding: 14px; }
     .image-viewer-modal.active { display: flex; flex-direction: column; }
     .image-viewer-modal img { max-width: 100%; max-height: 80vh; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); object-fit: contain; }
@@ -118,6 +126,7 @@
     <main class="content-box" id="viewStore">
       <div class="filters-bar">
         <button class="filter-chip active" onclick="applyCategoryFilter('all', this)">All</button>
+        <button class="filter-chip" onclick="applyCategoryFilter('Combo', this)">🔥 Combo Packs</button>
         <button class="filter-chip" onclick="applyCategoryFilter('Notes', this)">📝 Notes</button>
         <button class="filter-chip" onclick="applyCategoryFilter('Sample Paper', this)">📑 Sample Papers</button>
       </div>
@@ -136,6 +145,44 @@
     <!-- 3. Admin View -->
     <main class="content-box" id="viewAdmin" style="display: none;">
       
+      <!-- Add Material / Combo Card -->
+      <div class="admin-card">
+        <h3>➕ Add Study Material / Combo Pack</h3>
+        <div class="form-group">
+          <label>Title (e.g. Math Complete Combo / Physics Ch-1):</label>
+          <input type="text" id="newTitle" class="form-input" placeholder="Title likhein">
+        </div>
+        <div class="form-group">
+          <label>Subject (e.g. All Subjects / Math / Chemistry):</label>
+          <input type="text" id="newSub" class="form-input" placeholder="Subject">
+        </div>
+        <div class="form-group">
+          <label>Type / Package:</label>
+          <select id="newType" class="form-input">
+            <option value="Notes">Single Notes (₹12 style)</option>
+            <option value="Combo">Combo Pack Offer (₹30 style)</option>
+            <option value="Sample Paper">Sample Paper</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Admin Custom Price (₹):</label>
+          <input type="number" id="newPrice" class="form-input" placeholder="e.g. 12 ya 30 (Free ke liye 0 dalein)">
+        </div>
+        <div class="form-group">
+          <label>Subject Cover Photo / Thumbnail (Upload Image):</label>
+          <input type="file" id="newThumbFile" accept="image/*" class="form-input" style="padding: 5px;">
+        </div>
+        <div class="form-group">
+          <label>PDF / Google Drive URL:</label>
+          <input type="url" id="newUrl" class="form-input" placeholder="https://drive.google.com/...">
+        </div>
+        <div class="form-group">
+          <label>Short Description:</label>
+          <input type="text" id="newDesc" class="form-input" placeholder="e.g. Complete 5 Chapters Bundle or Single Chapter Notes">
+        </div>
+        <button class="btn-submit" onclick="uploadMaterialToFirebase()">Publish Note / Combo</button>
+      </div>
+
       <!-- Coupon Manager -->
       <div class="admin-card">
         <h3>🎟️ Create Discount Coupon Code</h3>
@@ -169,40 +216,7 @@
         <button class="btn-submit" onclick="saveAdminUpiSettings()">Save UPI Details</button>
       </div>
 
-      <!-- Add Material -->
-      <div class="admin-card">
-        <h3>➕ Add New Note / Sample Paper</h3>
-        <div class="form-group">
-          <label>Title:</label>
-          <input type="text" id="newTitle" class="form-input" placeholder="e.g. Class 10 Math Chapter 1">
-        </div>
-        <div class="form-group">
-          <label>Subject:</label>
-          <input type="text" id="newSub" class="form-input" placeholder="e.g. Math / Physics">
-        </div>
-        <div class="form-group">
-          <label>Category:</label>
-          <select id="newType" class="form-input">
-            <option value="Notes">Notes</option>
-            <option value="Sample Paper">Sample Paper</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Price (₹):</label>
-          <input type="number" id="newPrice" class="form-input" placeholder="e.g. 29 (Free ke liye 0 dalein)">
-        </div>
-        <div class="form-group">
-          <label>PDF / Google Drive URL:</label>
-          <input type="url" id="newUrl" class="form-input" placeholder="https://drive.google.com/...">
-        </div>
-        <div class="form-group">
-          <label>Short Description:</label>
-          <input type="text" id="newDesc" class="form-input" placeholder="Short description">
-        </div>
-        <button class="btn-submit" onclick="uploadMaterialToFirebase()">Publish Note</button>
-      </div>
-
-      <!-- Payment Verifications with Screenshot -->
+      <!-- Payment Verifications -->
       <div class="admin-card">
         <h3>📋 Student Payment Approvals & Proofs</h3>
         <div id="paymentRequestsBox"></div>
@@ -214,7 +228,6 @@
       <div class="modal-card">
         <h3 id="payModalTitle" style="font-size: 15px;">Complete Payment</h3>
         
-        <!-- Coupon Section -->
         <div style="background: #f1f5f9; padding: 8px 10px; border-radius: 8px;">
           <label style="font-size: 11px; font-weight: 700; color: #475569;">Have a Coupon Code?</label>
           <div class="coupon-box">
@@ -226,7 +239,6 @@
 
         <p style="font-size: 13px; font-weight: 700; color: #16a34a;" id="payModalPrice"></p>
 
-        <!-- QR Box -->
         <div class="qr-container" id="qrContainer">
           <p style="font-size: 11.5px; font-weight: 600;">Scan QR Code to Pay via UPI:</p>
           <img id="modalQrImg" class="qr-img" src="" alt="QR">
@@ -250,7 +262,7 @@
       </div>
     </div>
 
-    <!-- Image Viewer Modal for Admin -->
+    <!-- Image Viewer Modal -->
     <div class="image-viewer-modal" id="imageViewerModal" onclick="closeImageViewer()">
       <img id="previewModalImg" src="" alt="Screenshot">
       <button class="auth-btn-small" style="background:#fff; color:#000; margin-top:12px; padding:8px 16px;">Close Preview</button>
@@ -273,6 +285,9 @@
     const auth = firebase.auth();
     const rtdb = firebase.database();
 
+    // Enable Permanent Local Persistence for Automatic Login
+    auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+
     let currentUser = null;
     let isAdminLoggedIn = false;
     let activeFilter = "all";
@@ -283,11 +298,7 @@
     let currentDiscountedAmount = 0;
     let appliedCouponName = "";
 
-    // Auth handler
-    auth.getRedirectResult().then((result) => {
-      if (result && result.user) setupUserSession(result.user);
-    }).catch((err) => console.warn(err.message));
-
+    // Auto-Login Listener (Jab bhi app khulega, auto-login trigger hoga)
     auth.onAuthStateChanged((user) => {
       if (user) {
         setupUserSession(user);
@@ -421,15 +432,27 @@
 
       filtered.forEach(item => {
         const isUnlocked = userPurchasesCache.includes(item.id) || item.price === 0;
+        const defaultThumb = "https://images.unsplash.com/photo-1497633762265-9d179a990aa6?w=200&auto=format&fit=crop&q=60";
+        const thumbSrc = item.thumbnail || defaultThumb;
+
+        let badgeClass = "badge-notes";
+        if (item.type === "Combo") badgeClass = "badge-combo";
+        else if (item.type === "Sample Paper") badgeClass = "badge-sample";
+
         const card = document.createElement("div");
         card.className = "mat-card";
         card.innerHTML = `
-          <div class="mat-header">
-            <span class="badge ${item.type === 'Notes' ? 'badge-notes' : 'badge-sample'}">${item.type} • ${item.subject}</span>
-            <span class="mat-price">${item.price === 0 ? 'FREE' : '₹' + item.price}</span>
+          <div class="mat-card-body">
+            <img src="${thumbSrc}" class="mat-thumb" alt="Subject Cover">
+            <div class="mat-details">
+              <div class="mat-header">
+                <span class="badge ${badgeClass}">${item.type === 'Combo' ? '🔥 COMBO' : item.type} • ${item.subject}</span>
+                <span class="mat-price">${item.price === 0 ? 'FREE' : '₹' + item.price}</span>
+              </div>
+              <h4 class="mat-title">${item.title}</h4>
+              <p class="mat-desc">${item.desc || 'Complete notes and revision pack'}</p>
+            </div>
           </div>
-          <h4 class="mat-title">${item.title}</h4>
-          <p class="mat-desc">${item.desc || 'Complete revision notes'}</p>
           <div class="mat-footer">
             ${isUnlocked 
               ? `<a href="${item.link}" target="_blank" class="btn-download">📥 Open PDF</a>` 
@@ -517,7 +540,6 @@
       document.getElementById("modalDirectPayLink").href = upiLink;
     }
 
-    // Apply Coupon Code
     function applyCouponCode() {
       const code = document.getElementById("userCouponInput").value.trim().toUpperCase();
       const feedback = document.getElementById("couponFeedback");
@@ -549,12 +571,10 @@
       document.getElementById("ssFileInput").value = "";
     }
 
-    // Submit Proof with Base64 Screenshot
     async function submitUtrProof() {
       const utr = document.getElementById("utrCodeInput").value.trim();
       const fileInput = document.getElementById("ssFileInput");
 
-      // 100% Free coupon direct unlock
       if (currentDiscountedAmount === 0 && appliedCouponName) {
         await rtdb.ref(`users/${currentUser.uid}/unlockedMaterials/${pendingBuyItem.id}`).set(true);
         alert("100% Discount Coupon! Notes successfully unlock ho gaye.");
@@ -585,10 +605,9 @@
           timestamp: Date.now()
         });
 
-        // Instant access
         await rtdb.ref(`users/${currentUser.uid}/unlockedMaterials/${pendingBuyItem.id}`).set(true);
 
-        alert("Payment Proof & Screenshot submit ho gaya! Notes unlock kar diye gaye hain.");
+        alert("Payment Proof submit ho gaya! Notes unlock kar diye gaye hain.");
         closeModal();
         switchTab('orders');
       };
@@ -596,7 +615,47 @@
       reader.readAsDataURL(file);
     }
 
-    // Admin Operations
+    // Admin Operations: Material + Thumbnail Upload
+    async function uploadMaterialToFirebase() {
+      const title = document.getElementById("newTitle").value.trim();
+      const subject = document.getElementById("newSub").value.trim() || "General";
+      const type = document.getElementById("newType").value;
+      const price = parseInt(document.getElementById("newPrice").value) || 0;
+      const link = document.getElementById("newUrl").value.trim();
+      const desc = document.getElementById("newDesc").value.trim();
+      const thumbFile = document.getElementById("newThumbFile").files[0];
+
+      if (!title || !link) return alert("Title aur PDF link dono zaroori hain!");
+
+      const saveItem = async (thumbBase64) => {
+        await rtdb.ref("materials").push({
+          title, subject, type, price, link, desc,
+          thumbnail: thumbBase64 || "",
+          createdAt: Date.now()
+        });
+
+        document.getElementById("newTitle").value = "";
+        document.getElementById("newUrl").value = "";
+        document.getElementById("newDesc").value = "";
+        document.getElementById("newThumbFile").value = "";
+        alert("Material with Thumbnail Save ho gaya!");
+        switchTab('store');
+      };
+
+      if (thumbFile) {
+        const reader = new FileReader();
+        reader.onload = (e) => saveItem(e.target.result);
+        reader.readAsDataURL(thumbFile);
+      } else {
+        saveItem("");
+      }
+    }
+
+    async function deleteMaterial(id) {
+      if (!confirm("Delete karna chahte hain?")) return;
+      await rtdb.ref(`materials/${id}`).remove();
+    }
+
     async function createCouponCode() {
       const code = document.getElementById("couponCodeInput").value.trim().toUpperCase();
       const percent = parseInt(document.getElementById("couponPercentInput").value);
@@ -638,32 +697,6 @@
         span.innerHTML = `${c.code} (${c.percent}%) <b style="cursor:pointer; color:red;" onclick="deleteCoupon('${c.code}')">✕</b>`;
         box.appendChild(span);
       });
-    }
-
-    async function uploadMaterialToFirebase() {
-      const title = document.getElementById("newTitle").value.trim();
-      const subject = document.getElementById("newSub").value.trim() || "General";
-      const type = document.getElementById("newType").value;
-      const price = parseInt(document.getElementById("newPrice").value) || 0;
-      const link = document.getElementById("newUrl").value.trim();
-      const desc = document.getElementById("newDesc").value.trim();
-
-      if (!title || !link) return alert("Title aur PDF link dono zaroori hain!");
-
-      await rtdb.ref("materials").push({
-        title, subject, type, price, link, desc, createdAt: Date.now()
-      });
-
-      document.getElementById("newTitle").value = "";
-      document.getElementById("newUrl").value = "";
-      document.getElementById("newDesc").value = "";
-      alert("Material Realtime Database par save ho gaya!");
-      switchTab('store');
-    }
-
-    async function deleteMaterial(id) {
-      if (!confirm("Delete karna chahte hain?")) return;
-      await rtdb.ref(`materials/${id}`).remove();
     }
 
     function saveAdminUpiSettings() {
