@@ -31,70 +31,165 @@
     }
     @media (min-width: 480px) { .app-wrapper { height: 94vh; border-radius: 20px; } }
 
-    .top-header { background: var(--wa-teal); color: #fff; padding: 12px 14px; display: flex; justify-content: space-between; align-items: center; z-index: 10; }
+    /* Top Header */
+    .top-header { background: var(--wa-teal); color: #fff; padding: 12px 14px; display: flex; justify-content: space-between; align-items: center; z-index: 20; flex-shrink: 0; }
     .brand { display: flex; align-items: center; gap: 8px; }
     .brand-avatar { width: 36px; height: 36px; border-radius: 50%; background: #25d366; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: bold; }
     .brand-title { font-size: 16px; font-weight: 700; }
     .header-user-badge { display: flex; align-items: center; gap: 6px; }
     .auth-btn-small { background: rgba(255,255,255,0.2); color: #fff; border: 1px solid rgba(255,255,255,0.4); padding: 5px 10px; border-radius: 16px; font-size: 11px; font-weight: 600; cursor: pointer; }
 
-    .tabs-bar { display: flex; background: var(--wa-dark); }
-    .tab-btn { flex: 1; padding: 10px 0; text-align: center; border: none; background: transparent; font-size: 12px; font-weight: 600; color: #bbf7d0; text-transform: uppercase; cursor: pointer; }
+    /* Top Tabs */
+    .tabs-bar { display: flex; background: var(--wa-dark); flex-shrink: 0; z-index: 15; }
+    .tab-btn { flex: 1; padding: 12px 0; text-align: center; border: none; background: transparent; font-size: 12.5px; font-weight: 700; color: #bbf7d0; text-transform: uppercase; cursor: pointer; }
     .tab-btn.active { color: #ffffff; border-bottom: 3px solid #25d366; }
 
-    .content-box { flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 10px; }
-    .filters-bar { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; }
+    /* Fixed & Non-overlapping Filters Bar */
+    .filters-wrapper {
+      background: #e5ded4;
+      padding: 10px 12px;
+      border-bottom: 1px solid rgba(0,0,0,0.06);
+      flex-shrink: 0;
+      z-index: 10;
+    }
+    .filters-bar {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      white-space: nowrap;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+      padding: 2px 0;
+    }
     .filters-bar::-webkit-scrollbar { display: none; }
-    .filter-chip { background: #ffffff; border: 1px solid #d1d5db; border-radius: 16px; padding: 4px 10px; font-size: 11.5px; font-weight: 500; white-space: nowrap; cursor: pointer; }
-    .filter-chip.active { background: var(--primary); color: #fff; border-color: var(--primary); }
 
-    .mat-card { background: #ffffff; border-radius: var(--radius); padding: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); display: flex; flex-direction: column; gap: 6px; }
-    .mat-card-body { display: flex; gap: 10px; align-items: flex-start; }
-    .mat-thumb { width: 75px; height: 85px; border-radius: 8px; object-fit: cover; background: #e2e8f0; flex-shrink: 0; }
-    .mat-details { flex: 1; display: flex; flex-direction: column; gap: 3px; }
-    .mat-header { display: flex; justify-content: space-between; align-items: center; }
+    .filter-chip {
+      background: #ffffff;
+      border: 1px solid #d1d5db;
+      border-radius: 20px;
+      padding: 6px 14px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #374151;
+      cursor: pointer;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+      flex-shrink: 0;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .filter-chip.active {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+
+    /* Scrollable Content Container */
+    .content-box {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    /* Enhanced Material Cards */
+    .mat-card {
+      background: #ffffff;
+      border-radius: var(--radius);
+      padding: 12px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      border: 1px solid rgba(0,0,0,0.04);
+    }
+    .mat-card-body { display: flex; gap: 12px; align-items: flex-start; }
+    .mat-thumb {
+      width: 78px;
+      height: 94px;
+      border-radius: 8px;
+      object-fit: cover;
+      background: #f1f5f9;
+      flex-shrink: 0;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .mat-details { flex: 1; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+    .mat-header { display: flex; justify-content: space-between; align-items: center; gap: 6px; }
     
-    .badge { font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 5px; text-transform: uppercase; }
+    .badge { font-size: 10px; font-weight: 700; padding: 3px 7px; border-radius: 5px; text-transform: uppercase; white-space: nowrap; }
     .badge-notes { background: #dbeafe; color: #1e40af; }
     .badge-sample { background: #fef3c7; color: #92400e; }
     .badge-combo { background: #fce7f3; color: #be185d; border: 1px solid #f472b6; }
 
-    .mat-price { font-size: 14.5px; font-weight: 800; color: #16a34a; }
-    .mat-title { font-size: 14px; font-weight: 700; color: var(--text); line-height: 1.3; }
+    .mat-price { font-size: 15px; font-weight: 800; color: #16a34a; white-space: nowrap; }
+    .mat-title { font-size: 14.5px; font-weight: 700; color: var(--text); line-height: 1.3; }
     .mat-desc { font-size: 12px; color: var(--text-muted); line-height: 1.35; }
-    .mat-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 4px; padding-top: 6px; border-top: 1px solid #f1f5f9; gap: 6px; flex-wrap: wrap; }
+    .mat-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 4px; padding-top: 8px; border-top: 1px solid #f1f5f9; gap: 6px; flex-wrap: wrap; }
 
-    .btn-buy { background: var(--primary); color: #fff; border: none; border-radius: 6px; padding: 6px 14px; font-size: 12px; font-weight: 600; cursor: pointer; }
-    .btn-download { background: #16a34a; color: #fff; border: none; border-radius: 6px; padding: 6px 12px; font-size: 12px; font-weight: 600; text-decoration: none; display: inline-block; }
-    .btn-pending { background: #f59e0b; color: #fff; border: none; border-radius: 6px; padding: 6px 10px; font-size: 11.5px; font-weight: 600; }
-    .btn-del { background: #fee2e2; color: #dc2626; border: none; border-radius: 6px; padding: 5px 8px; font-size: 11px; font-weight: 600; cursor: pointer; }
-    .btn-edit { background: #e0f2fe; color: #0284c7; border: none; border-radius: 6px; padding: 5px 8px; font-size: 11px; font-weight: 600; cursor: pointer; }
+    .btn-buy { background: var(--primary); color: #fff; border: none; border-radius: 6px; padding: 7px 16px; font-size: 12.5px; font-weight: 700; cursor: pointer; }
+    .btn-download { background: #16a34a; color: #fff; border: none; border-radius: 6px; padding: 7px 14px; font-size: 12.5px; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; }
+    .btn-pending { background: #f59e0b; color: #fff; border: none; border-radius: 6px; padding: 7px 12px; font-size: 11.5px; font-weight: 700; }
+    .btn-del { background: #fee2e2; color: #dc2626; border: none; border-radius: 6px; padding: 6px 10px; font-size: 11.5px; font-weight: 600; cursor: pointer; }
+    .btn-edit { background: #e0f2fe; color: #0284c7; border: none; border-radius: 6px; padding: 6px 10px; font-size: 11.5px; font-weight: 600; cursor: pointer; }
 
-    .admin-card { background: #fff; padding: 12px; border-radius: var(--radius); box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 8px; }
-    .admin-card h3 { font-size: 14px; margin-bottom: 8px; color: var(--wa-teal); }
-    .form-group { display: flex; flex-direction: column; gap: 3px; margin-bottom: 8px; }
-    .form-group label { font-size: 11.5px; font-weight: 600; color: var(--text-muted); }
-    .form-input { padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; outline: none; }
-    .btn-submit { width: 100%; background: var(--wa-teal); color: #fff; border: none; border-radius: 6px; padding: 9px; font-size: 13px; font-weight: 600; cursor: pointer; }
+    /* Dedicated Combo Unlock Container in My Notes */
+    .combo-unlocked-card {
+      background: #fff;
+      border: 1.5px solid #f472b6;
+      border-radius: var(--radius);
+      padding: 14px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .combo-unlocked-header { display: flex; justify-content: space-between; align-items: center; }
+    .combo-subitems-list {
+      background: #fdf2f8;
+      border-radius: 8px;
+      padding: 8px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .combo-subitem-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px 0;
+      border-bottom: 1px dashed #fbcfe8;
+    }
+    .combo-subitem-row:last-child { border-bottom: none; }
+
+    /* Admin View */
+    .admin-card { background: #fff; padding: 14px; border-radius: var(--radius); box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 10px; }
+    .admin-card h3 { font-size: 14.5px; margin-bottom: 10px; color: var(--wa-teal); }
+    .form-group { display: flex; flex-direction: column; gap: 4px; margin-bottom: 10px; }
+    .form-group label { font-size: 12px; font-weight: 600; color: var(--text-muted); }
+    .form-input { padding: 9px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 13px; outline: none; }
+    .btn-submit { width: 100%; background: var(--wa-teal); color: #fff; border: none; border-radius: 8px; padding: 10px; font-size: 13.5px; font-weight: 700; cursor: pointer; }
 
     /* Modal Sheet */
-    .modal-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: flex-end; z-index: 100; }
+    .modal-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.65); display: none; justify-content: center; align-items: flex-end; z-index: 100; }
     .modal-overlay.active { display: flex; }
     .modal-card { background: #fff; width: 100%; border-top-left-radius: 20px; border-top-right-radius: 20px; padding: 16px; display: flex; flex-direction: column; gap: 10px; max-height: 88vh; overflow-y: auto; }
     
     .coupon-box { display: flex; gap: 6px; margin: 4px 0; }
-    .btn-apply { background: #0284c7; color: #fff; border: none; border-radius: 6px; padding: 0 12px; font-size: 12px; font-weight: 600; cursor: pointer; }
+    .btn-apply { background: #0284c7; color: #fff; border: none; border-radius: 6px; padding: 0 14px; font-size: 12px; font-weight: 700; cursor: pointer; }
 
     .qr-container { text-align: center; background: #f8fafc; padding: 10px; border-radius: 10px; border: 1px dashed #cbd5e1; }
     .qr-img { width: 160px; height: 160px; margin: 6px auto; display: block; }
-    .upi-btn { padding: 7px 12px; background: #e0f2fe; color: #0369a1; border-radius: 6px; font-size: 12px; font-weight: 700; text-decoration: none; text-align: center; display: block; margin: 4px 0; }
+    .upi-btn { padding: 8px 12px; background: #e0f2fe; color: #0369a1; border-radius: 6px; font-size: 12px; font-weight: 700; text-decoration: none; text-align: center; display: block; margin: 4px 0; }
     
     table.req-table { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 6px; }
     table.req-table th, table.req-table td { border: 1px solid #e2e8f0; padding: 6px; text-align: left; vertical-align: middle; }
     table.req-table th { background: #f8fafc; }
-    .btn-view-ss { background: #0284c7; color: #fff; border: none; border-radius: 4px; padding: 3px 6px; font-size: 10px; cursor: pointer; }
-    .btn-approve { background: #16a34a; color: #fff; border: none; border-radius: 4px; padding: 4px 8px; font-size: 11px; font-weight: bold; cursor: pointer; }
-    .btn-reject { background: #dc2626; color: #fff; border: none; border-radius: 4px; padding: 4px 6px; font-size: 11px; cursor: pointer; }
+    .btn-view-ss { background: #0284c7; color: #fff; border: none; border-radius: 4px; padding: 4px 8px; font-size: 10.5px; cursor: pointer; }
+    .btn-approve { background: #16a34a; color: #fff; border: none; border-radius: 4px; padding: 5px 10px; font-size: 11px; font-weight: bold; cursor: pointer; }
+    .btn-reject { background: #dc2626; color: #fff; border: none; border-radius: 4px; padding: 5px 8px; font-size: 11px; cursor: pointer; }
 
     .combo-items-box { border: 1px solid #cbd5e1; border-radius: 8px; padding: 8px; max-height: 140px; overflow-y: auto; background: #f8fafc; display: flex; flex-direction: column; gap: 6px; }
     .combo-item-check { display: flex; align-items: center; gap: 8px; font-size: 12px; }
@@ -107,6 +202,8 @@
 <body>
 
   <div class="app-wrapper">
+    
+    <!-- Top Header -->
     <header class="top-header">
       <div class="brand">
         <div class="brand-avatar">📚</div>
@@ -121,30 +218,33 @@
       </div>
     </header>
 
+    <!-- Top Navigation Tabs -->
     <nav class="tabs-bar">
-      <button class="tab-btn active" id="tabStoreBtn" onclick="switchTab('store')">Store</button>
-      <button class="tab-btn" id="tabMyOrdersBtn" onclick="switchTab('orders')">My Notes</button>
-      <button class="tab-btn" id="tabAdminBtn" style="display: none;" onclick="switchTab('admin')">Admin Panel</button>
+      <button class="tab-btn active" id="tabStoreBtn" onclick="switchTab('store')">STORE</button>
+      <button class="tab-btn" id="tabMyOrdersBtn" onclick="switchTab('orders')">MY NOTES</button>
+      <button class="tab-btn" id="tabAdminBtn" style="display: none;" onclick="switchTab('admin')">ADMIN</button>
     </nav>
 
-    <!-- 1. Store View -->
-    <main class="content-box" id="viewStore">
+    <!-- Fixed Filter Chips for Store -->
+    <div class="filters-wrapper" id="storeFiltersWrapper">
       <div class="filters-bar">
         <button class="filter-chip active" onclick="applyCategoryFilter('all', this)">All</button>
         <button class="filter-chip" onclick="applyCategoryFilter('Combo', this)">🔥 Combo Packs</button>
         <button class="filter-chip" onclick="applyCategoryFilter('Notes', this)">📝 Notes</button>
         <button class="filter-chip" onclick="applyCategoryFilter('Sample Paper', this)">📑 Sample Papers</button>
       </div>
-      <div id="materialsList" style="display: flex; flex-direction: column; gap: 8px;">
-        <p style="text-align:center; font-size:12px; color:#667781; padding:20px;">Loading...</p>
+    </div>
+
+    <!-- 1. Store View -->
+    <main class="content-box" id="viewStore">
+      <div id="materialsList" style="display: flex; flex-direction: column; gap: 10px;">
+        <p style="text-align:center; font-size:12px; color:#667781; padding:20px;">Loading Materials...</p>
       </div>
     </main>
 
     <!-- 2. My Notes View -->
     <main class="content-box" id="viewOrders" style="display: none;">
-      <h3 style="font-size: 14px;">Aapke Khareede Huye Notes</h3>
-      <p style="font-size: 11.5px; color: var(--text-muted);">Admin verify karne ke baad hi unlocked PDFs yahan dikhenge.</p>
-      <div id="unlockedContainer" style="display: flex; flex-direction: column; gap: 8px; margin-top: 6px;"></div>
+      <div id="unlockedContainer" style="display: flex; flex-direction: column; gap: 12px;"></div>
     </main>
 
     <!-- 3. Admin View -->
@@ -169,7 +269,7 @@
         </div>
 
         <div class="form-group">
-          <label>Title (e.g. Physics Ch-1 ya Complete Class 10 Combo):</label>
+          <label>Title (e.g. Science Complete Bundle / Math Ch-1):</label>
           <input type="text" id="newTitle" class="form-input" placeholder="Title likhein">
         </div>
         <div class="form-group">
@@ -249,7 +349,7 @@
           <p id="couponFeedback" style="font-size: 11px; margin-top: 3px; font-weight: 600;"></p>
         </div>
 
-        <p style="font-size: 13px; font-weight: 700; color: #16a34a;" id="payModalPrice"></p>
+        <p style="font-size: 13.5px; font-weight: 800; color: #16a34a;" id="payModalPrice"></p>
 
         <div class="qr-container" id="qrContainer">
           <p style="font-size: 11.5px; font-weight: 600;">Scan QR Code to Pay via UPI:</p>
@@ -401,9 +501,15 @@
       document.getElementById("viewStore").style.display = name === 'store' ? 'flex' : 'none';
       document.getElementById("viewOrders").style.display = name === 'orders' ? 'flex' : 'none';
       document.getElementById("viewAdmin").style.display = name === 'admin' ? 'flex' : 'none';
+
+      // Filters only show in STORE
+      document.getElementById("storeFiltersWrapper").style.display = name === 'store' ? 'block' : 'none';
+
       document.getElementById("tabStoreBtn").classList.toggle("active", name === 'store');
       document.getElementById("tabMyOrdersBtn").classList.toggle("active", name === 'orders');
       document.getElementById("tabAdminBtn").classList.toggle("active", name === 'admin');
+
+      if (name === 'orders') renderUnlockedUI();
     }
 
     function toggleAdminPrompt() {
@@ -510,6 +616,21 @@
       });
     }
 
+    // Helper: Check if an item is unlocked (either directly or via an unlocked combo)
+    function isItemUnlocked(item) {
+      if (item.price === 0) return true;
+      if (userPurchasesCache.includes(item.id)) return true;
+      
+      // If any unlocked combo contains this item, it is unlocked
+      const unlockedCombos = allMaterialsCache.filter(m => m.type === "Combo" && userPurchasesCache.includes(m.id));
+      for (let combo of unlockedCombos) {
+        if (combo.bundledItems && combo.bundledItems.includes(item.id)) {
+          return true;
+        }
+      }
+      return false;
+    }
+
     function renderStoreUI() {
       const container = document.getElementById("materialsList");
       container.innerHTML = "";
@@ -525,7 +646,7 @@
       }
 
       filtered.forEach(item => {
-        const isUnlocked = userPurchasesCache.includes(item.id) || item.price === 0;
+        const unlocked = isItemUnlocked(item);
         const isPending = pendingPurchasesCache.includes(item.id);
         const defaultThumb = "https://images.unsplash.com/photo-1497633762265-9d179a990aa6?w=200&auto=format&fit=crop&q=60";
         const thumbSrc = item.thumbnail || defaultThumb;
@@ -538,8 +659,12 @@
         card.className = "mat-card";
 
         let actionButton = `<button class="btn-buy" onclick="triggerBuy('${item.id}')">Buy (₹${item.price})</button>`;
-        if (isUnlocked) {
-          actionButton = `<a href="${item.link || '#'}" target="_blank" class="btn-download">📥 Open PDF</a>`;
+        if (unlocked) {
+          if (item.type === "Combo") {
+            actionButton = `<button class="btn-download" onclick="switchTab('orders')">📦 View Unlocked Combo</button>`;
+          } else {
+            actionButton = `<a href="${item.link || '#'}" target="_blank" class="btn-download">📥 Open PDF</a>`;
+          }
         } else if (isPending) {
           actionButton = `<span class="btn-pending">⏳ Verification Pending</span>`;
         }
@@ -567,6 +692,7 @@
       });
     }
 
+    // Render My Notes: Combos + Single Items with clean separation
     function renderUnlockedUI() {
       const container = document.getElementById("unlockedContainer");
       container.innerHTML = "";
@@ -576,23 +702,85 @@
         return;
       }
 
-      const unlockedItems = allMaterialsCache.filter(it => userPurchasesCache.includes(it.id));
+      // 1. Check Unlocked Combos
+      const myCombos = allMaterialsCache.filter(it => it.type === "Combo" && userPurchasesCache.includes(it.id));
+      
+      // 2. Check Unlocked Single Items
+      const mySingles = allMaterialsCache.filter(it => it.type !== "Combo" && isItemUnlocked(it));
 
-      if (unlockedItems.length === 0) {
-        container.innerHTML = `<p style="text-align:center; font-size:12px; color:#667781; padding:20px;">Aapka koi verified unlocked material nahi hai. (Payment verify hone par unlock hoga)</p>`;
+      if (myCombos.length === 0 && mySingles.length === 0) {
+        container.innerHTML = `<p style="text-align:center; font-size:12px; color:#667781; padding:20px;">Aapka koi verified unlocked material nahi hai.<br><small style="color:#aaa;">(Admin approval ke baad yahan PDF open ho jayega)</small></p>`;
         return;
       }
 
-      unlockedItems.forEach(item => {
-        const card = document.createElement("div");
-        card.className = "mat-card";
-        card.innerHTML = `
-          <span class="badge badge-notes">${item.type} • ${item.subject}</span>
-          <h4 class="mat-title">${item.title}</h4>
-          <a href="${item.link}" target="_blank" class="btn-download" style="text-align:center; margin-top:4px;">📥 Download Verified PDF</a>
-        `;
-        container.appendChild(card);
-      });
+      // SECTION 1: Unlocked Combo Bundles with Sub-item breakdown
+      if (myCombos.length > 0) {
+        const comboSectionTitle = document.createElement("div");
+        comboSectionTitle.innerHTML = `<h3 style="font-size:14px; color:#be185d; margin-bottom:4px;">🔥 My Unlocked Combo Bundles</h3><p style="font-size:11.5px; color:#666; margin-bottom:8px;">Is combo ke andar ke saare chapters unlock ho chuke hain:</p>`;
+        container.appendChild(comboSectionTitle);
+
+        myCombos.forEach(combo => {
+          const comboCard = document.createElement("div");
+          comboCard.className = "combo-unlocked-card";
+
+          let bundledHtml = "";
+          if (combo.bundledItems && combo.bundledItems.length > 0) {
+            combo.bundledItems.forEach(itemId => {
+              const subItem = allMaterialsCache.find(m => m.id === itemId);
+              if (subItem) {
+                bundledHtml += `
+                  <div class="combo-subitem-row">
+                    <div>
+                      <strong style="font-size:13px; color:#111;">${subItem.title}</strong>
+                      <div style="font-size:11px; color:#64748b;">${subItem.subject}</div>
+                    </div>
+                    <a href="${subItem.link || '#'}" target="_blank" class="btn-download" style="padding:5px 10px; font-size:11.5px;">📥 Open PDF</a>
+                  </div>
+                `;
+              }
+            });
+          } else {
+            bundledHtml = `<div style="font-size:12px; color:#666;">All bundle files are ready.</div>`;
+          }
+
+          comboCard.innerHTML = `
+            <div class="combo-unlocked-header">
+              <div>
+                <span class="badge badge-combo">COMBO UNLOCKED</span>
+                <h4 style="font-size:15px; font-weight:800; color:#111; margin-top:2px;">${combo.title}</h4>
+              </div>
+              ${combo.link ? `<a href="${combo.link}" target="_blank" class="btn-download" style="padding:6px 12px; font-size:12px;">📁 Open All Drive</a>` : ''}
+            </div>
+            <div class="combo-subitems-list">
+              ${bundledHtml}
+            </div>
+          `;
+          container.appendChild(comboCard);
+        });
+      }
+
+      // SECTION 2: Single Notes & Sample Papers
+      if (mySingles.length > 0) {
+        const singleSectionTitle = document.createElement("div");
+        singleSectionTitle.innerHTML = `<h3 style="font-size:14px; color:var(--wa-teal); margin: 8px 0 4px 0;">📝 My Individual Notes & Papers</h3>`;
+        container.appendChild(singleSectionTitle);
+
+        mySingles.forEach(item => {
+          const card = document.createElement("div");
+          card.className = "mat-card";
+          card.innerHTML = `
+            <div class="mat-header">
+              <span class="badge badge-notes">${item.type} • ${item.subject}</span>
+              <span style="font-size:11.5px; color:#16a34a; font-weight:bold;">Unlocked</span>
+            </div>
+            <h4 class="mat-title">${item.title}</h4>
+            <div class="mat-footer">
+              <a href="${item.link}" target="_blank" class="btn-download">📥 Download / Open PDF</a>
+            </div>
+          `;
+          container.appendChild(card);
+        });
+      }
     }
 
     function applyCategoryFilter(cat, btn) {
@@ -673,14 +861,17 @@
       document.getElementById("ssFileInput").value = "";
     }
 
-    // Submit UTR Proof - Status set to PENDING (Strict Admin Verification)
     async function submitUtrProof() {
       const utr = document.getElementById("utrCodeInput").value.trim();
       const fileInput = document.getElementById("ssFileInput");
 
-      // Free Coupon unlock directly
       if (currentDiscountedAmount === 0 && appliedCouponName) {
         await rtdb.ref(`users/${currentUser.uid}/unlockedMaterials/${pendingBuyItem.id}`).set(true);
+        if (pendingBuyItem.type === "Combo" && pendingBuyItem.bundledItems) {
+          for (let subId of pendingBuyItem.bundledItems) {
+            await rtdb.ref(`users/${currentUser.uid}/unlockedMaterials/${subId}`).set(true);
+          }
+        }
         alert("100% Discount Coupon! Notes successfully unlock ho gaye.");
         closeModal();
         switchTab('orders');
@@ -706,7 +897,7 @@
           couponUsed: appliedCouponName || "None",
           utr: utr,
           screenshot: base64Image,
-          status: "pending", // Waiting for Admin
+          status: "pending",
           timestamp: Date.now()
         });
 
@@ -718,7 +909,7 @@
       reader.readAsDataURL(file);
     }
 
-    // Admin Operations: Publish Material & Smart Combo
+    // Admin Operations
     async function uploadMaterialToFirebase() {
       const type = document.getElementById("newType").value;
       const title = document.getElementById("newTitle").value.trim();
@@ -767,7 +958,6 @@
       }
     }
 
-    // Material Edit Flow
     function openEditModal(id) {
       const item = allMaterialsCache.find(m => m.id === id);
       if (!item) return;
@@ -809,7 +999,6 @@
       await rtdb.ref(`materials/${id}`).remove();
     }
 
-    // Admin Verification Operations: Approve or Reject Payment
     async function approveOrder(orderKey, userId, materialId) {
       if (!confirm("Payment verify karke unlock karein?")) return;
 
@@ -818,14 +1007,13 @@
       // Unlock main item
       await rtdb.ref(`users/${userId}/unlockedMaterials/${materialId}`).set(true);
 
-      // Agar Combo hai, toh uske andar ke saare bundled items bhi unlock karo
+      // Combo ke saare items unlock karo
       if (material && material.type === "Combo" && material.bundledItems) {
         for (let subId of material.bundledItems) {
           await rtdb.ref(`users/${userId}/unlockedMaterials/${subId}`).set(true);
         }
       }
 
-      // Order status set to approved
       await rtdb.ref(`orders/${orderKey}`).update({ status: "approved" });
       alert("Order Approved & Material Unlocked for Student!");
     }
@@ -902,7 +1090,6 @@
       document.getElementById("adminNameInput").value = localStorage.getItem("admin_payee_name") || "Ankit Kumar";
       renderAdminCoupons();
 
-      // Orders verification list
       rtdb.ref("orders").limitToLast(30).on("value", (snapshot) => {
         const box = document.getElementById("paymentRequestsBox");
         const val = snapshot.val();
