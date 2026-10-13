@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>StudyHub - Notes & Store</title>
+  <title>Studytopper - Notes & Store</title>
 
   <!-- Firebase Realtime Database & Auth SDKs -->
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
@@ -39,7 +39,7 @@
     .header-user-badge { display: flex; align-items: center; gap: 6px; }
     .auth-btn-small { background: rgba(255,255,255,0.2); color: #fff; border: 1px solid rgba(255,255,255,0.4); padding: 5px 10px; border-radius: 16px; font-size: 11px; font-weight: 600; cursor: pointer; }
 
-    /* Top Tabs */
+    /* Top Navigation Tabs */
     .tabs-bar { display: flex; background: var(--wa-dark); flex-shrink: 0; z-index: 15; }
     .tab-btn { flex: 1; padding: 12px 0; text-align: center; border: none; background: transparent; font-size: 12.5px; font-weight: 700; color: #bbf7d0; text-transform: uppercase; cursor: pointer; }
     .tab-btn.active { color: #ffffff; border-bottom: 3px solid #25d366; }
@@ -203,12 +203,12 @@
 
   <div class="app-wrapper">
     
-    <!-- Top Header -->
+    <!-- Top Header: Updated to Studytopper -->
     <header class="top-header">
       <div class="brand">
         <div class="brand-avatar">📚</div>
         <div>
-          <h1 class="brand-title">StudyHub Ankit</h1>
+          <h1 class="brand-title">Studytopper</h1>
           <p id="userStatusLine" style="font-size: 10.5px; color: #bbf7d0;">Connecting...</p>
         </div>
       </div>
@@ -616,12 +616,10 @@
       });
     }
 
-    // Helper: Check if an item is unlocked (either directly or via an unlocked combo)
     function isItemUnlocked(item) {
       if (item.price === 0) return true;
       if (userPurchasesCache.includes(item.id)) return true;
       
-      // If any unlocked combo contains this item, it is unlocked
       const unlockedCombos = allMaterialsCache.filter(m => m.type === "Combo" && userPurchasesCache.includes(m.id));
       for (let combo of unlockedCombos) {
         if (combo.bundledItems && combo.bundledItems.includes(item.id)) {
@@ -692,7 +690,6 @@
       });
     }
 
-    // Render My Notes: Combos + Single Items with clean separation
     function renderUnlockedUI() {
       const container = document.getElementById("unlockedContainer");
       container.innerHTML = "";
@@ -702,10 +699,7 @@
         return;
       }
 
-      // 1. Check Unlocked Combos
       const myCombos = allMaterialsCache.filter(it => it.type === "Combo" && userPurchasesCache.includes(it.id));
-      
-      // 2. Check Unlocked Single Items
       const mySingles = allMaterialsCache.filter(it => it.type !== "Combo" && isItemUnlocked(it));
 
       if (myCombos.length === 0 && mySingles.length === 0) {
@@ -713,7 +707,6 @@
         return;
       }
 
-      // SECTION 1: Unlocked Combo Bundles with Sub-item breakdown
       if (myCombos.length > 0) {
         const comboSectionTitle = document.createElement("div");
         comboSectionTitle.innerHTML = `<h3 style="font-size:14px; color:#be185d; margin-bottom:4px;">🔥 My Unlocked Combo Bundles</h3><p style="font-size:11.5px; color:#666; margin-bottom:8px;">Is combo ke andar ke saare chapters unlock ho chuke hain:</p>`;
@@ -759,7 +752,6 @@
         });
       }
 
-      // SECTION 2: Single Notes & Sample Papers
       if (mySingles.length > 0) {
         const singleSectionTitle = document.createElement("div");
         singleSectionTitle.innerHTML = `<h3 style="font-size:14px; color:var(--wa-teal); margin: 8px 0 4px 0;">📝 My Individual Notes & Papers</h3>`;
@@ -790,7 +782,6 @@
       renderStoreUI();
     }
 
-    // Checkout Flow
     function triggerBuy(itemId) {
       if (!currentUser) {
         alert("Pehle Sign In karein!");
@@ -909,7 +900,6 @@
       reader.readAsDataURL(file);
     }
 
-    // Admin Operations
     async function uploadMaterialToFirebase() {
       const type = document.getElementById("newType").value;
       const title = document.getElementById("newTitle").value.trim();
@@ -1004,10 +994,8 @@
 
       const material = allMaterialsCache.find(m => m.id === materialId);
       
-      // Unlock main item
       await rtdb.ref(`users/${userId}/unlockedMaterials/${materialId}`).set(true);
 
-      // Combo ke saare items unlock karo
       if (material && material.type === "Combo" && material.bundledItems) {
         for (let subId of material.bundledItems) {
           await rtdb.ref(`users/${userId}/unlockedMaterials/${subId}`).set(true);
