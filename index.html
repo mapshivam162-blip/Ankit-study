@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Studytopper - Notes & Store</title>
 
-  <!-- Firebase Realtime Database & Auth SDKs -->
+  <!-- Firebase v10 Compat SDKs -->
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
@@ -44,7 +44,7 @@
     .tab-btn { flex: 1; padding: 12px 0; text-align: center; border: none; background: transparent; font-size: 12.5px; font-weight: 700; color: #bbf7d0; text-transform: uppercase; cursor: pointer; }
     .tab-btn.active { color: #ffffff; border-bottom: 3px solid #25d366; }
 
-    /* Fixed & Non-overlapping Filters Bar */
+    /* Fixed Filters Bar */
     .filters-wrapper {
       background: #e5ded4;
       padding: 10px 12px;
@@ -95,7 +95,7 @@
       -webkit-overflow-scrolling: touch;
     }
 
-    /* Enhanced Material Cards */
+    /* Cards */
     .mat-card {
       background: #ffffff;
       border-radius: var(--radius);
@@ -197,6 +197,21 @@
     .image-viewer-modal { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 200; padding: 14px; }
     .image-viewer-modal.active { display: flex; flex-direction: column; }
     .image-viewer-modal img { max-width: 100%; max-height: 80vh; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); object-fit: contain; }
+
+    .google-btn {
+      background: #4285F4;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 10px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
   </style>
 </head>
 <body>
@@ -213,19 +228,19 @@
         </div>
       </div>
       <div class="header-user-badge">
-        <button class="auth-btn-small" id="googleAuthBtn" onclick="handleAuthChoice()">Sign In</button>
+        <button class="auth-btn-small" id="authBtn" onclick="openAuthModal()">Sign In</button>
         <button class="auth-btn-small" id="adminToggleBtn" onclick="toggleAdminPrompt()">Admin</button>
       </div>
     </header>
 
-    <!-- Top Navigation Tabs -->
+    <!-- Navigation Tabs -->
     <nav class="tabs-bar">
       <button class="tab-btn active" id="tabStoreBtn" onclick="switchTab('store')">STORE</button>
       <button class="tab-btn" id="tabMyOrdersBtn" onclick="switchTab('orders')">MY NOTES</button>
       <button class="tab-btn" id="tabAdminBtn" style="display: none;" onclick="switchTab('admin')">ADMIN</button>
     </nav>
 
-    <!-- Fixed Filter Chips for Store -->
+    <!-- Filter Chips for Store -->
     <div class="filters-wrapper" id="storeFiltersWrapper">
       <div class="filters-bar">
         <button class="filter-chip active" onclick="applyCategoryFilter('all', this)">All</button>
@@ -250,9 +265,9 @@
     <!-- 3. Admin View -->
     <main class="content-box" id="viewAdmin" style="display: none;">
       
-      <!-- UPI Settings (Saved Permanently in Firebase) -->
+      <!-- UPI Settings Saved in Firebase -->
       <div class="admin-card">
-        <h3>💳 Admin UPI Settings (Cloud Saved)</h3>
+        <h3>💳 Admin UPI Settings (Saved in Cloud)</h3>
         <div class="form-group">
           <label>Apni UPI ID dalein (Students ispe pay karenge):</label>
           <input type="text" id="adminUpiInput" class="form-input" placeholder="e.g. ankit@paytm">
@@ -283,7 +298,6 @@
           </select>
         </div>
 
-        <!-- Combo Items Selector -->
         <div class="form-group" id="comboSelectGroup" style="display: none;">
           <label>Select items to include in this Combo:</label>
           <div class="combo-items-box" id="comboItemsContainer"></div>
@@ -336,6 +350,38 @@
       </div>
 
     </main>
+
+    <!-- Sign In / Sign Up Modal -->
+    <div class="modal-overlay" id="authModal">
+      <div class="modal-card">
+        <h3 style="font-size: 16px;">Student Account Login / Register</h3>
+        <p style="font-size: 12px; color: var(--text-muted);">Google ya Email se login karein taaki aapke khareede huye notes hamesha saved rahein.</p>
+
+        <!-- Google 1-Click Login -->
+        <button class="google-btn" onclick="signInWithGoogle()">
+          <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#fff" d="M21.35 11.1h-9.17v2.98h5.27c-.23 1.25-.94 2.31-2 3.02v2.51h3.24c1.89-1.74 2.98-4.31 2.98-7.38 0-.55-.05-1.1-.14-1.63z"/><path fill="#fff" d="M12.18 21c2.7 0 4.96-.9 6.62-2.43l-3.24-2.51c-.9.6-2.05.96-3.38.96-2.6 0-4.8-1.76-5.59-4.12H3.25v2.6C4.94 18.84 8.3 21 12.18 21z"/><path fill="#fff" d="M6.59 12.9c-.2-.6-.31-1.24-.31-1.9s.11-1.3.31-1.9V6.5H3.25C2.58 7.83 2.2 9.37 2.2 11s.38 3.17 1.05 4.5l3.34-2.6z"/><path fill="#fff" d="M12.18 5.96c1.47 0 2.79.51 3.83 1.5l2.87-2.87C17.14 3.01 14.88 2 12.18 2 8.3 2 4.94 4.16 3.25 7.5l3.34 2.6c.79-2.36 2.99-4.14 5.59-4.14z"/></svg>
+          Sign in with Google
+        </button>
+
+        <div style="text-align:center; font-size:12px; color:#aaa; margin: 4px 0;">— YA EMAIL SE LOGIN KAREIN —</div>
+
+        <div class="form-group">
+          <label>Email Address:</label>
+          <input type="email" id="authEmail" class="form-input" placeholder="student@gmail.com">
+        </div>
+        <div class="form-group">
+          <label>Password:</label>
+          <input type="password" id="authPassword" class="form-input" placeholder="Password (min 6 characters)">
+        </div>
+
+        <div style="display:flex; gap:8px;">
+          <button class="btn-submit" style="flex:1;" onclick="signInWithEmail()">Log In</button>
+          <button class="btn-submit" style="flex:1; background:#0284c7;" onclick="signUpWithEmail()">Register</button>
+        </div>
+
+        <button class="auth-btn-small" style="color:#000; border:1px solid #ccc; width:100%; padding:8px; margin-top:4px;" onclick="closeAuthModal()">Cancel</button>
+      </div>
+    </div>
 
     <!-- Payment Sheet Modal -->
     <div class="modal-overlay" id="payModal">
@@ -429,6 +475,7 @@
     const auth = firebase.auth();
     const rtdb = firebase.database();
 
+    // Permanent Auth State Persistence
     auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
 
     let currentUser = null;
@@ -443,7 +490,7 @@
     let appliedCouponName = "";
     let globalAdminUpi = { upiId: "ankit@upi", payeeName: "Ankit Kumar" };
 
-    // 1. Live Listen to Admin UPI Settings from Firebase (Zero Data Loss)
+    // 1. Firebase Cloud Sync for UPI Settings (Har phone me live load hoga)
     rtdb.ref("settings/upi").on("value", (snapshot) => {
       const val = snapshot.val();
       if (val && val.upiId) {
@@ -455,63 +502,86 @@
       }
     });
 
-    // Auto-Login Listener
+    // 2. Auth State Observer
     auth.onAuthStateChanged((user) => {
       if (user) {
-        setupUserSession(user);
+        currentUser = user;
+        document.getElementById("userStatusLine").textContent = user.displayName || user.email || "Logged In";
+        document.getElementById("authBtn").textContent = "Sign Out";
+        listenToUserPurchases(user.uid);
+        listenToUserOrders(user.uid);
       } else {
-        const savedGuest = localStorage.getItem("study_guest_user");
-        if (savedGuest) {
-          setupUserSession(JSON.parse(savedGuest));
-        } else {
-          currentUser = null;
-          document.getElementById("userStatusLine").textContent = "Guest (Not Signed In)";
-          document.getElementById("googleAuthBtn").textContent = "Sign In";
-          userPurchasesCache = [];
-          pendingPurchasesCache = [];
-          renderStoreUI();
-          renderUnlockedUI();
-        }
+        currentUser = null;
+        document.getElementById("userStatusLine").textContent = "Guest (Not Signed In)";
+        document.getElementById("authBtn").textContent = "Sign In";
+        userPurchasesCache = [];
+        pendingPurchasesCache = [];
+        renderStoreUI();
+        renderUnlockedUI();
       }
     });
 
-    function setupUserSession(user) {
-      currentUser = user;
-      document.getElementById("userStatusLine").textContent = user.displayName || user.email || user.name || "Logged In";
-      document.getElementById("googleAuthBtn").textContent = "Sign Out";
-      listenToUserPurchases(user.uid);
-      listenToUserOrders(user.uid);
-    }
-
-    async function handleAuthChoice() {
+    // Auth Modal Handlers
+    function openAuthModal() {
       if (currentUser) {
         if (confirm("Sign out karna chahte hain?")) {
-          localStorage.removeItem("study_guest_user");
-          await auth.signOut();
-          location.reload();
+          auth.signOut();
         }
-        return;
+      } else {
+        document.getElementById("authModal").classList.add("active");
       }
+    }
 
-      const choice = prompt("Login Option chunein:\n1. Type '1' - Google Sign-In\n2. Type '2' - Fast Student Name Login (Direct)", "2");
+    function closeAuthModal() {
+      document.getElementById("authModal").classList.remove("active");
+    }
 
-      if (choice === "1") {
-        const provider = new firebase.auth.GoogleAuthProvider();
+    // Google Sign-In with Fallback to Redirect
+    async function signInWithGoogle() {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      try {
+        await auth.signInWithPopup(provider);
+        closeAuthModal();
+      } catch (err) {
         try {
           await auth.signInWithRedirect(provider);
         } catch (e) {
-          alert("Option 2 use karein.");
+          alert("Google Sign-In Error: " + err.message);
         }
-      } else if (choice === "2") {
-        const name = prompt("Apna Naam ya Roll Number dalein:");
-        if (!name || name.trim() === "") return;
-        const fakeUid = "student_" + name.trim().toLowerCase().replace(/\s+/g, "_");
-        const guestObj = { uid: fakeUid, displayName: name.trim(), email: name.trim() + "@student.in" };
-        localStorage.setItem("study_guest_user", JSON.stringify(guestObj));
-        setupUserSession(guestObj);
       }
     }
 
+    // Email / Password Login & Register
+    async function signInWithEmail() {
+      const email = document.getElementById("authEmail").value.trim();
+      const pass = document.getElementById("authPassword").value;
+      if (!email || !pass) return alert("Email aur Password dono dalein!");
+
+      try {
+        await auth.signInWithEmailAndPassword(email, pass);
+        closeAuthModal();
+        alert("Login Successful!");
+      } catch (err) {
+        alert("Login Error: " + err.message);
+      }
+    }
+
+    async function signUpWithEmail() {
+      const email = document.getElementById("authEmail").value.trim();
+      const pass = document.getElementById("authPassword").value;
+      if (!email || !pass) return alert("Email aur Password dono dalein!");
+      if (pass.length < 6) return alert("Password kam se kam 6 characters ka hona chahiye!");
+
+      try {
+        await auth.createUserWithEmailAndPassword(email, pass);
+        closeAuthModal();
+        alert("Account Created & Logged In!");
+      } catch (err) {
+        alert("Registration Error: " + err.message);
+      }
+    }
+
+    // Tab Switcher
     function switchTab(name) {
       document.getElementById("viewStore").style.display = name === 'store' ? 'flex' : 'none';
       document.getElementById("viewOrders").style.display = name === 'orders' ? 'flex' : 'none';
@@ -526,6 +596,7 @@
       if (name === 'orders') renderUnlockedUI();
     }
 
+    // Universal Admin Toggle (Kisi bhi phone me password dalte hi sync ho jayega)
     function toggleAdminPrompt() {
       if (isAdminLoggedIn) {
         isAdminLoggedIn = false;
@@ -534,7 +605,7 @@
         switchTab('store');
         renderStoreUI();
       } else {
-        const pass = prompt("Admin Password:");
+        const pass = prompt("Admin Password dalein:");
         if (pass === "adminankit") {
           isAdminLoggedIn = true;
           document.getElementById("adminToggleBtn").textContent = "Exit Admin";
@@ -542,7 +613,7 @@
           switchTab('admin');
           loadAdminData();
           renderStoreUI();
-          alert("Admin Access Granted!");
+          alert("Admin Access Granted! Saara cloud data live load ho gaya.");
         } else if (pass !== null) {
           alert("Galat Password!");
         }
@@ -589,7 +660,6 @@
       });
     }
 
-    // Listen to Coupons directly from Firebase
     function listenToCoupons() {
       rtdb.ref("coupons").on("value", (snapshot) => {
         activeCouponsCache = snapshot.val() || {};
@@ -796,11 +866,11 @@
       renderStoreUI();
     }
 
-    // Checkout Flow using Firebase UPI
+    // Checkout Flow
     function triggerBuy(itemId) {
       if (!currentUser) {
-        alert("Pehle Sign In karein!");
-        handleAuthChoice();
+        alert("Pehle Google ya Email se Sign In karein!");
+        openAuthModal();
         return;
       }
 
@@ -1024,10 +1094,8 @@
 
       const material = allMaterialsCache.find(m => m.id === materialId);
       
-      // Unlock item for user permanently in Firebase
       await rtdb.ref(`users/${userId}/unlockedMaterials/${materialId}`).set(true);
 
-      // Agar Combo hai, to andar ke sabhi chapters unlock karo
       if (material && material.type === "Combo" && material.bundledItems) {
         for (let subId of material.bundledItems) {
           await rtdb.ref(`users/${userId}/unlockedMaterials/${subId}`).set(true);
@@ -1096,7 +1164,6 @@
       document.getElementById("imageViewerModal").classList.remove("active");
     }
 
-    // Load Live Orders & Approvals directly from Firebase
     function loadAdminData() {
       renderAdminCoupons();
 
@@ -1139,7 +1206,6 @@
       });
     }
 
-    // App Init
     window.onload = () => {
       listenToMaterials();
       listenToCoupons();
