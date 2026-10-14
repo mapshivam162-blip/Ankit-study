@@ -10,6 +10,9 @@
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 
+  <!-- Tesseract.js (Screenshot se UTR Read karne ke liye Free AI OCR) -->
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+
   <style>
     :root {
       --wa-teal: #075E54;
@@ -84,7 +87,7 @@
       border-color: var(--primary);
     }
 
-    /* Scrollable Content Container */
+    /* Content Area */
     .content-box {
       flex: 1;
       overflow-y: auto;
@@ -131,11 +134,10 @@
 
     .btn-buy { background: var(--primary); color: #fff; border: none; border-radius: 6px; padding: 7px 16px; font-size: 12.5px; font-weight: 700; cursor: pointer; }
     .btn-download { background: #16a34a; color: #fff; border: none; border-radius: 6px; padding: 7px 14px; font-size: 12.5px; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; }
-    .btn-pending { background: #f59e0b; color: #fff; border: none; border-radius: 6px; padding: 7px 12px; font-size: 11.5px; font-weight: 700; }
     .btn-del { background: #fee2e2; color: #dc2626; border: none; border-radius: 6px; padding: 6px 10px; font-size: 11.5px; font-weight: 600; cursor: pointer; }
     .btn-edit { background: #e0f2fe; color: #0284c7; border: none; border-radius: 6px; padding: 6px 10px; font-size: 11.5px; font-weight: 600; cursor: pointer; }
 
-    /* Dedicated Combo Unlock Container in My Notes */
+    /* Unlocked Combo Box */
     .combo-unlocked-card {
       background: #fff;
       border: 1.5px solid #f472b6;
@@ -188,8 +190,6 @@
     table.req-table th, table.req-table td { border: 1px solid #e2e8f0; padding: 6px; text-align: left; vertical-align: middle; }
     table.req-table th { background: #f8fafc; }
     .btn-view-ss { background: #0284c7; color: #fff; border: none; border-radius: 4px; padding: 4px 8px; font-size: 10.5px; cursor: pointer; }
-    .btn-approve { background: #16a34a; color: #fff; border: none; border-radius: 4px; padding: 5px 10px; font-size: 11px; font-weight: bold; cursor: pointer; }
-    .btn-reject { background: #dc2626; color: #fff; border: none; border-radius: 4px; padding: 5px 8px; font-size: 11px; cursor: pointer; }
 
     .combo-items-box { border: 1px solid #cbd5e1; border-radius: 8px; padding: 8px; max-height: 140px; overflow-y: auto; background: #f8fafc; display: flex; flex-direction: column; gap: 6px; }
     .combo-item-check { display: flex; align-items: center; gap: 8px; font-size: 12px; }
@@ -212,19 +212,32 @@
       justify-content: center;
       gap: 8px;
     }
+
+    /* OCR Scanning Banner */
+    .scan-status-box {
+      display: none;
+      background: #e0f2fe;
+      color: #0369a1;
+      border: 1px solid #7dd3fc;
+      border-radius: 8px;
+      padding: 10px;
+      font-size: 12px;
+      text-align: center;
+      font-weight: 600;
+    }
   </style>
 </head>
 <body>
 
   <div class="app-wrapper">
     
-    <!-- Top Header -->
+    <!-- Header -->
     <header class="top-header">
       <div class="brand">
         <div class="brand-avatar">📚</div>
         <div>
           <h1 class="brand-title">Studytopper</h1>
-          <p id="userStatusLine" style="font-size: 10.5px; color: #bbf7d0;">Connecting to Firebase...</p>
+          <p id="userStatusLine" style="font-size: 10.5px; color: #bbf7d0;">Connecting...</p>
         </div>
       </div>
       <div class="header-user-badge">
@@ -233,14 +246,14 @@
       </div>
     </header>
 
-    <!-- Navigation Tabs -->
+    <!-- Nav Tabs -->
     <nav class="tabs-bar">
       <button class="tab-btn active" id="tabStoreBtn" onclick="switchTab('store')">STORE</button>
       <button class="tab-btn" id="tabMyOrdersBtn" onclick="switchTab('orders')">MY NOTES</button>
       <button class="tab-btn" id="tabAdminBtn" style="display: none;" onclick="switchTab('admin')">ADMIN</button>
     </nav>
 
-    <!-- Filter Chips for Store -->
+    <!-- Filter Chips -->
     <div class="filters-wrapper" id="storeFiltersWrapper">
       <div class="filters-bar">
         <button class="filter-chip active" onclick="applyCategoryFilter('all', this)">All</button>
@@ -265,24 +278,24 @@
     <!-- 3. Admin View -->
     <main class="content-box" id="viewAdmin" style="display: none;">
       
-      <!-- UPI Settings Saved in Firebase -->
+      <!-- UPI Settings -->
       <div class="admin-card">
-        <h3>💳 Admin UPI Settings (Saved in Cloud)</h3>
+        <h3>💳 Admin UPI Settings (Cloud Saved)</h3>
         <div class="form-group">
-          <label>Apni UPI ID dalein (Students ispe pay karenge):</label>
+          <label>Apni UPI ID dalein:</label>
           <input type="text" id="adminUpiInput" class="form-input" placeholder="e.g. ankit@paytm">
         </div>
         <div class="form-group">
           <label>Payee Name:</label>
           <input type="text" id="adminNameInput" class="form-input" placeholder="e.g. Ankit Kumar">
         </div>
-        <button class="btn-submit" onclick="saveAdminUpiSettings()">Save UPI Details to Firebase</button>
+        <button class="btn-submit" onclick="saveAdminUpiSettings()">Save UPI Details</button>
       </div>
 
-      <!-- Payment Approvals with Screenshot & Verification -->
+      <!-- Payment Logs (Auto-Verified) -->
       <div class="admin-card">
-        <h3>📋 Student Payment Approvals & Proofs</h3>
-        <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 6px;">Approve karne par student ka PDF turant unlock hoga.</p>
+        <h3>📋 Realtime Orders & Auto-Verification Logs</h3>
+        <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 6px;">OCR dwara auto-approved aur declined orders yahan aayenge.</p>
         <div id="paymentRequestsBox"></div>
       </div>
 
@@ -304,11 +317,11 @@
         </div>
 
         <div class="form-group">
-          <label>Title (e.g. Science Complete Bundle / Math Ch-1):</label>
+          <label>Title:</label>
           <input type="text" id="newTitle" class="form-input" placeholder="Title likhein">
         </div>
         <div class="form-group">
-          <label>Subject (e.g. Math / Science / All in One):</label>
+          <label>Subject:</label>
           <input type="text" id="newSub" class="form-input" placeholder="Subject">
         </div>
         <div class="form-group">
@@ -320,14 +333,14 @@
           <input type="file" id="newThumbFile" accept="image/*" class="form-input" style="padding: 5px;">
         </div>
         <div class="form-group" id="pdfLinkGroup">
-          <label>PDF / Google Drive URL (Combo ke liye optional):</label>
+          <label>PDF / Google Drive URL:</label>
           <input type="url" id="newUrl" class="form-input" placeholder="https://drive.google.com/...">
         </div>
         <div class="form-group">
           <label>Short Description:</label>
-          <input type="text" id="newDesc" class="form-input" placeholder="e.g. 3 Chapters Combo Bundle @ ₹30">
+          <input type="text" id="newDesc" class="form-input" placeholder="Short description">
         </div>
-        <button class="btn-submit" onclick="uploadMaterialToFirebase()">Publish Note / Combo to Firebase</button>
+        <button class="btn-submit" onclick="uploadMaterialToFirebase()">Publish Note / Combo</button>
       </div>
 
       <!-- Coupon Manager -->
@@ -341,23 +354,22 @@
           <label>Discount Percentage (% off):</label>
           <input type="number" id="couponPercentInput" class="form-input" placeholder="e.g. 50 (1 to 100)" min="1" max="100">
         </div>
-        <button class="btn-submit" style="background:#0284c7;" onclick="createCouponCode()">Create Coupon in Firebase</button>
+        <button class="btn-submit" style="background:#0284c7;" onclick="createCouponCode()">Create Coupon</button>
         
         <div style="margin-top: 10px;">
-          <label style="font-size: 11.5px; font-weight: 600; color: var(--text-muted);">Active Coupons (Firebase):</label>
+          <label style="font-size: 11.5px; font-weight: 600; color: var(--text-muted);">Active Coupons:</label>
           <div id="activeCouponsList" style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px;"></div>
         </div>
       </div>
 
     </main>
 
-    <!-- Sign In / Sign Up Modal -->
+    <!-- Sign In Modal -->
     <div class="modal-overlay" id="authModal">
       <div class="modal-card">
-        <h3 style="font-size: 16px;">Student Account Login / Register</h3>
-        <p style="font-size: 12px; color: var(--text-muted);">Google ya Email se login karein taaki aapke khareede huye notes hamesha saved rahein.</p>
+        <h3 style="font-size: 16px;">Student Login / Register</h3>
+        <p style="font-size: 12px; color: var(--text-muted);">Apne account se login karein taaki aapke notes hamesha saved rahein.</p>
 
-        <!-- Google 1-Click Login -->
         <button class="google-btn" onclick="signInWithGoogle()">
           <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#fff" d="M21.35 11.1h-9.17v2.98h5.27c-.23 1.25-.94 2.31-2 3.02v2.51h3.24c1.89-1.74 2.98-4.31 2.98-7.38 0-.55-.05-1.1-.14-1.63z"/><path fill="#fff" d="M12.18 21c2.7 0 4.96-.9 6.62-2.43l-3.24-2.51c-.9.6-2.05.96-3.38.96-2.6 0-4.8-1.76-5.59-4.12H3.25v2.6C4.94 18.84 8.3 21 12.18 21z"/><path fill="#fff" d="M6.59 12.9c-.2-.6-.31-1.24-.31-1.9s.11-1.3.31-1.9V6.5H3.25C2.58 7.83 2.2 9.37 2.2 11s.38 3.17 1.05 4.5l3.34-2.6z"/><path fill="#fff" d="M12.18 5.96c1.47 0 2.79.51 3.83 1.5l2.87-2.87C17.14 3.01 14.88 2 12.18 2 8.3 2 4.94 4.16 3.25 7.5l3.34 2.6c.79-2.36 2.99-4.14 5.59-4.14z"/></svg>
           Sign in with Google
@@ -383,7 +395,7 @@
       </div>
     </div>
 
-    <!-- Payment Sheet Modal -->
+    <!-- Payment Sheet Modal with AI Scanning -->
     <div class="modal-overlay" id="payModal">
       <div class="modal-card">
         <h3 id="payModalTitle" style="font-size: 15px;">Complete Payment</h3>
@@ -409,15 +421,20 @@
 
         <div class="form-group" style="margin-top: 4px;">
           <label>1. Payment ke baad 12-digit UTR Number dalein:</label>
-          <input type="text" id="utrCodeInput" class="form-input" placeholder="Enter UTR Number">
+          <input type="text" id="utrCodeInput" class="form-input" placeholder="Enter 12-digit UTR Number" maxlength="16">
         </div>
 
         <div class="form-group">
-          <label>2. Payment Screenshot Upload karein:</label>
+          <label>2. Payment Screenshot Upload karein (Clean & Clear):</label>
           <input type="file" id="ssFileInput" accept="image/*" class="form-input" style="padding: 5px;">
         </div>
 
-        <button class="btn-submit" style="background: #16a34a;" onclick="submitUtrProof()">Submit Proof for Verification</button>
+        <!-- Scanning progress banner -->
+        <div class="scan-status-box" id="scanStatusBox">
+          🔍 Scanning Screenshot & Matching UTR Number... Kripya 3-5 second rukein.
+        </div>
+
+        <button class="btn-submit" id="submitProofBtn" style="background: #16a34a;" onclick="submitAndAutoVerifyPayment()">Verify & Instant Unlock</button>
         <button class="auth-btn-small" style="color:#000; border:1px solid #ccc; width:100%; padding:8px; margin-top:2px;" onclick="closeModal()">Cancel</button>
       </div>
     </div>
@@ -475,7 +492,6 @@
     const auth = firebase.auth();
     const rtdb = firebase.database();
 
-    // Permanent Auth State Persistence
     auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
 
     let currentUser = null;
@@ -483,14 +499,13 @@
     let activeFilter = "all";
     let allMaterialsCache = [];
     let userPurchasesCache = [];
-    let pendingPurchasesCache = [];
     let activeCouponsCache = {};
     let pendingBuyItem = null;
     let currentDiscountedAmount = 0;
     let appliedCouponName = "";
     let globalAdminUpi = { upiId: "ankit@upi", payeeName: "Ankit Kumar" };
 
-    // 1. Firebase Cloud Sync for UPI Settings (Har phone me live load hoga)
+    // Live Sync UPI
     rtdb.ref("settings/upi").on("value", (snapshot) => {
       const val = snapshot.val();
       if (val && val.upiId) {
@@ -502,31 +517,26 @@
       }
     });
 
-    // 2. Auth State Observer
+    // Auth Observer
     auth.onAuthStateChanged((user) => {
       if (user) {
         currentUser = user;
         document.getElementById("userStatusLine").textContent = user.displayName || user.email || "Logged In";
         document.getElementById("authBtn").textContent = "Sign Out";
         listenToUserPurchases(user.uid);
-        listenToUserOrders(user.uid);
       } else {
         currentUser = null;
         document.getElementById("userStatusLine").textContent = "Guest (Not Signed In)";
         document.getElementById("authBtn").textContent = "Sign In";
         userPurchasesCache = [];
-        pendingPurchasesCache = [];
         renderStoreUI();
         renderUnlockedUI();
       }
     });
 
-    // Auth Modal Handlers
     function openAuthModal() {
       if (currentUser) {
-        if (confirm("Sign out karna chahte hain?")) {
-          auth.signOut();
-        }
+        if (confirm("Sign out karna chahte hain?")) auth.signOut();
       } else {
         document.getElementById("authModal").classList.add("active");
       }
@@ -536,7 +546,6 @@
       document.getElementById("authModal").classList.remove("active");
     }
 
-    // Google Sign-In with Fallback to Redirect
     async function signInWithGoogle() {
       const provider = new firebase.auth.GoogleAuthProvider();
       try {
@@ -551,16 +560,13 @@
       }
     }
 
-    // Email / Password Login & Register
     async function signInWithEmail() {
       const email = document.getElementById("authEmail").value.trim();
       const pass = document.getElementById("authPassword").value;
       if (!email || !pass) return alert("Email aur Password dono dalein!");
-
       try {
         await auth.signInWithEmailAndPassword(email, pass);
         closeAuthModal();
-        alert("Login Successful!");
       } catch (err) {
         alert("Login Error: " + err.message);
       }
@@ -571,22 +577,18 @@
       const pass = document.getElementById("authPassword").value;
       if (!email || !pass) return alert("Email aur Password dono dalein!");
       if (pass.length < 6) return alert("Password kam se kam 6 characters ka hona chahiye!");
-
       try {
         await auth.createUserWithEmailAndPassword(email, pass);
         closeAuthModal();
-        alert("Account Created & Logged In!");
       } catch (err) {
         alert("Registration Error: " + err.message);
       }
     }
 
-    // Tab Switcher
     function switchTab(name) {
       document.getElementById("viewStore").style.display = name === 'store' ? 'flex' : 'none';
       document.getElementById("viewOrders").style.display = name === 'orders' ? 'flex' : 'none';
       document.getElementById("viewAdmin").style.display = name === 'admin' ? 'flex' : 'none';
-
       document.getElementById("storeFiltersWrapper").style.display = name === 'store' ? 'block' : 'none';
 
       document.getElementById("tabStoreBtn").classList.toggle("active", name === 'store');
@@ -596,7 +598,6 @@
       if (name === 'orders') renderUnlockedUI();
     }
 
-    // Universal Admin Toggle (Kisi bhi phone me password dalte hi sync ho jayega)
     function toggleAdminPrompt() {
       if (isAdminLoggedIn) {
         isAdminLoggedIn = false;
@@ -613,14 +614,13 @@
           switchTab('admin');
           loadAdminData();
           renderStoreUI();
-          alert("Admin Access Granted! Saara cloud data live load ho gaya.");
+          alert("Admin Access Granted!");
         } else if (pass !== null) {
           alert("Galat Password!");
         }
       }
     }
 
-    // Realtime Database Listeners
     function listenToMaterials() {
       rtdb.ref("materials").on("value", (snapshot) => {
         allMaterialsCache = [];
@@ -642,21 +642,6 @@
         userPurchasesCache = val ? Object.keys(val) : [];
         renderStoreUI();
         renderUnlockedUI();
-      });
-    }
-
-    function listenToUserOrders(uid) {
-      rtdb.ref("orders").orderByChild("userId").equalTo(uid).on("value", (snapshot) => {
-        pendingPurchasesCache = [];
-        const val = snapshot.val();
-        if (val) {
-          Object.keys(val).forEach(k => {
-            if (val[k].status === "pending") {
-              pendingPurchasesCache.push(val[k].materialId);
-            }
-          });
-        }
-        renderStoreUI();
       });
     }
 
@@ -682,13 +667,7 @@
       const container = document.getElementById("comboItemsContainer");
       if (!container) return;
       container.innerHTML = "";
-
       const singles = allMaterialsCache.filter(m => m.type !== "Combo");
-      if (singles.length === 0) {
-        container.innerHTML = `<span style="font-size:11px; color:#888;">Pehle single notes publish karein.</span>`;
-        return;
-      }
-
       singles.forEach(m => {
         const div = document.createElement("div");
         div.className = "combo-item-check";
@@ -703,12 +682,9 @@
     function isItemUnlocked(item) {
       if (item.price === 0) return true;
       if (userPurchasesCache.includes(item.id)) return true;
-      
       const unlockedCombos = allMaterialsCache.filter(m => m.type === "Combo" && userPurchasesCache.includes(m.id));
       for (let combo of unlockedCombos) {
-        if (combo.bundledItems && combo.bundledItems.includes(item.id)) {
-          return true;
-        }
+        if (combo.bundledItems && combo.bundledItems.includes(item.id)) return true;
       }
       return false;
     }
@@ -716,7 +692,6 @@
     function renderStoreUI() {
       const container = document.getElementById("materialsList");
       container.innerHTML = "";
-
       const filtered = allMaterialsCache.filter(item => {
         if (activeFilter === 'all') return true;
         return item.type === activeFilter;
@@ -729,7 +704,6 @@
 
       filtered.forEach(item => {
         const unlocked = isItemUnlocked(item);
-        const isPending = pendingPurchasesCache.includes(item.id);
         const defaultThumb = "https://images.unsplash.com/photo-1497633762265-9d179a990aa6?w=200&auto=format&fit=crop&q=60";
         const thumbSrc = item.thumbnail || defaultThumb;
 
@@ -742,13 +716,9 @@
 
         let actionButton = `<button class="btn-buy" onclick="triggerBuy('${item.id}')">Buy (₹${item.price})</button>`;
         if (unlocked) {
-          if (item.type === "Combo") {
-            actionButton = `<button class="btn-download" onclick="switchTab('orders')">📦 View Unlocked Combo</button>`;
-          } else {
-            actionButton = `<a href="${item.link || '#'}" target="_blank" class="btn-download">📥 Open PDF</a>`;
-          }
-        } else if (isPending) {
-          actionButton = `<span class="btn-pending">⏳ Verification Pending</span>`;
+          actionButton = item.type === "Combo" 
+            ? `<button class="btn-download" onclick="switchTab('orders')">📦 View Unlocked Combo</button>` 
+            : `<a href="${item.link || '#'}" target="_blank" class="btn-download">📥 Open PDF</a>`;
         }
 
         card.innerHTML = `
@@ -787,19 +757,18 @@
       const mySingles = allMaterialsCache.filter(it => it.type !== "Combo" && isItemUnlocked(it));
 
       if (myCombos.length === 0 && mySingles.length === 0) {
-        container.innerHTML = `<p style="text-align:center; font-size:12px; color:#667781; padding:20px;">Aapka koi verified unlocked material nahi hai.<br><small style="color:#aaa;">(Admin approval ke baad yahan PDF open ho jayega)</small></p>`;
+        container.innerHTML = `<p style="text-align:center; font-size:12px; color:#667781; padding:20px;">Aapka koi unlocked material nahi hai.</p>`;
         return;
       }
 
       if (myCombos.length > 0) {
-        const comboSectionTitle = document.createElement("div");
-        comboSectionTitle.innerHTML = `<h3 style="font-size:14px; color:#be185d; margin-bottom:4px;">🔥 My Unlocked Combo Bundles</h3><p style="font-size:11.5px; color:#666; margin-bottom:8px;">Is combo ke andar ke saare chapters unlock ho chuke hain:</p>`;
-        container.appendChild(comboSectionTitle);
+        const comboTitle = document.createElement("div");
+        comboTitle.innerHTML = `<h3 style="font-size:14px; color:#be185d; margin-bottom:4px;">🔥 My Unlocked Combo Bundles</h3>`;
+        container.appendChild(comboTitle);
 
         myCombos.forEach(combo => {
           const comboCard = document.createElement("div");
           comboCard.className = "combo-unlocked-card";
-
           let bundledHtml = "";
           if (combo.bundledItems && combo.bundledItems.length > 0) {
             combo.bundledItems.forEach(itemId => {
@@ -816,30 +785,24 @@
                 `;
               }
             });
-          } else {
-            bundledHtml = `<div style="font-size:12px; color:#666;">All bundle files are ready.</div>`;
           }
-
           comboCard.innerHTML = `
             <div class="combo-unlocked-header">
               <div>
                 <span class="badge badge-combo">COMBO UNLOCKED</span>
                 <h4 style="font-size:15px; font-weight:800; color:#111; margin-top:2px;">${combo.title}</h4>
               </div>
-              ${combo.link ? `<a href="${combo.link}" target="_blank" class="btn-download" style="padding:6px 12px; font-size:12px;">📁 Open All Drive</a>` : ''}
             </div>
-            <div class="combo-subitems-list">
-              ${bundledHtml}
-            </div>
+            <div class="combo-subitems-list">${bundledHtml}</div>
           `;
           container.appendChild(comboCard);
         });
       }
 
       if (mySingles.length > 0) {
-        const singleSectionTitle = document.createElement("div");
-        singleSectionTitle.innerHTML = `<h3 style="font-size:14px; color:var(--wa-teal); margin: 8px 0 4px 0;">📝 My Individual Notes & Papers</h3>`;
-        container.appendChild(singleSectionTitle);
+        const singleTitle = document.createElement("div");
+        singleTitle.innerHTML = `<h3 style="font-size:14px; color:var(--wa-teal); margin: 8px 0 4px 0;">📝 My Individual Notes & Papers</h3>`;
+        container.appendChild(singleTitle);
 
         mySingles.forEach(item => {
           const card = document.createElement("div");
@@ -851,7 +814,7 @@
             </div>
             <h4 class="mat-title">${item.title}</h4>
             <div class="mat-footer">
-              <a href="${item.link}" target="_blank" class="btn-download">📥 Download / Open PDF</a>
+              <a href="${item.link}" target="_blank" class="btn-download">📥 Open PDF</a>
             </div>
           `;
           container.appendChild(card);
@@ -866,14 +829,12 @@
       renderStoreUI();
     }
 
-    // Checkout Flow
     function triggerBuy(itemId) {
       if (!currentUser) {
-        alert("Pehle Google ya Email se Sign In karein!");
+        alert("Pehle Sign In karein!");
         openAuthModal();
         return;
       }
-
       pendingBuyItem = allMaterialsCache.find(it => it.id === itemId);
       if (!pendingBuyItem) return;
 
@@ -889,7 +850,6 @@
     function updateCheckoutUI() {
       const upiId = globalAdminUpi.upiId || "ankit@upi";
       const payeeName = globalAdminUpi.payeeName || "Ankit Kumar";
-      
       document.getElementById("payModalTitle").textContent = pendingBuyItem.title;
       
       if (currentDiscountedAmount < pendingBuyItem.price) {
@@ -900,7 +860,6 @@
 
       const upiLink = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(payeeName)}&am=${currentDiscountedAmount}&cu=INR&tn=${encodeURIComponent(pendingBuyItem.title)}`;
       const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(upiLink)}`;
-
       document.getElementById("modalQrImg").src = qrUrl;
       document.getElementById("modalUpiText").textContent = `UPI: ${upiId} (${payeeName})`;
       document.getElementById("modalDirectPayLink").href = upiLink;
@@ -909,25 +868,19 @@
     function applyCouponCode() {
       const code = document.getElementById("userCouponInput").value.trim().toUpperCase();
       const feedback = document.getElementById("couponFeedback");
-
-      if (!code) {
-        feedback.style.color = "red";
-        feedback.textContent = "Coupon code dalein!";
-        return;
-      }
+      if (!code) return;
 
       if (activeCouponsCache && activeCouponsCache[code]) {
         const discountPercent = activeCouponsCache[code].percent;
         const discountAmount = Math.round((pendingBuyItem.price * discountPercent) / 100);
         currentDiscountedAmount = Math.max(0, pendingBuyItem.price - discountAmount);
         appliedCouponName = code;
-
         feedback.style.color = "#16a34a";
         feedback.textContent = `🎉 ${code} Applied! (${discountPercent}% OFF)`;
         updateCheckoutUI();
       } else {
         feedback.style.color = "red";
-        feedback.textContent = "Invalid ya Expired Coupon Code!";
+        feedback.textContent = "Invalid Coupon Code!";
       }
     }
 
@@ -935,57 +888,122 @@
       document.getElementById("payModal").classList.remove("active");
       document.getElementById("utrCodeInput").value = "";
       document.getElementById("ssFileInput").value = "";
+      document.getElementById("scanStatusBox").style.display = "none";
+      document.getElementById("submitProofBtn").disabled = false;
     }
 
-    async function submitUtrProof() {
-      const utr = document.getElementById("utrCodeInput").value.trim();
+    // ==========================================
+    // AI OCR AUTO-VERIFICATION SYSTEM
+    // ==========================================
+    async function submitAndAutoVerifyPayment() {
+      const utrInput = document.getElementById("utrCodeInput").value.trim();
       const fileInput = document.getElementById("ssFileInput");
+      const scanBox = document.getElementById("scanStatusBox");
+      const submitBtn = document.getElementById("submitProofBtn");
 
+      // 1. 100% Free Coupon Check
       if (currentDiscountedAmount === 0 && appliedCouponName) {
-        await rtdb.ref(`users/${currentUser.uid}/unlockedMaterials/${pendingBuyItem.id}`).set(true);
-        if (pendingBuyItem.type === "Combo" && pendingBuyItem.bundledItems) {
-          for (let subId of pendingBuyItem.bundledItems) {
-            await rtdb.ref(`users/${currentUser.uid}/unlockedMaterials/${subId}`).set(true);
-          }
-        }
+        await grantAccess(currentUser.uid, pendingBuyItem);
         alert("100% Discount Coupon! Notes successfully unlock ho gaye.");
         closeModal();
         switchTab('orders');
         return;
       }
 
-      if (!utr || utr.length < 4) return alert("Sahi 12-digit UTR number dalein!");
-      if (!fileInput.files || fileInput.files.length === 0) return alert("Payment screenshot upload karna zaroori hai!");
+      if (!utrInput || utrInput.length < 8) {
+        return alert("Kripya sahi UTR / Transaction reference number dalein (kam se kam 8-12 digits)!");
+      }
+      if (!fileInput.files || fileInput.files.length === 0) {
+        return alert("Kripya payment ka screenshot upload karein!");
+      }
+
+      // 2. Duplicate UTR Check in Firebase
+      submitBtn.disabled = true;
+      scanBox.style.display = "block";
+      scanBox.textContent = "1/2: Checking duplicate UTR in database...";
+
+      const duplicateSnap = await rtdb.ref("orders").orderByChild("utr").equalTo(utrInput).once("value");
+      if (duplicateSnap.exists()) {
+        scanBox.style.display = "none";
+        submitBtn.disabled = false;
+        return alert("❌ Fraud Alert: Yeh UTR number pehle se kisi order me use ho chuka hai! Ek payment se dobara unlock nahi kiya ja sakta.");
+      }
+
+      // 3. Tesseract.js OCR Scan on Screenshot
+      scanBox.textContent = "2/2: 🔍 Scanning screenshot & matching UTR number... Kripya 3-5 second rukein.";
 
       const file = fileInput.files[0];
-      const reader = new FileReader();
+      try {
+        const worker = await Tesseract.createWorker('eng');
+        const ret = await worker.recognize(file);
+        await worker.terminate();
 
-      reader.onload = async function(e) {
-        const base64Image = e.target.result;
+        const extractedText = ret.data.text.toLowerCase().replace(/[^a-z0-9]/g, '');
+        const cleanEnteredUtr = utrInput.toLowerCase().replace(/[^a-z0-9]/g, '');
 
-        await rtdb.ref("orders").push({
-          userId: currentUser.uid,
-          userEmail: currentUser.email || currentUser.displayName || "Student",
-          materialId: pendingBuyItem.id,
-          materialTitle: pendingBuyItem.title,
-          originalAmount: pendingBuyItem.price,
-          amountPaid: currentDiscountedAmount,
-          couponUsed: appliedCouponName || "None",
-          utr: utr,
-          screenshot: base64Image,
-          status: "pending",
-          timestamp: Date.now()
-        });
+        const reader = new FileReader();
+        reader.onload = async function(e) {
+          const base64Image = e.target.result;
 
-        alert("Payment Proof submit ho gaya! Admin verify karke unlock karega.");
-        closeModal();
-        renderStoreUI();
-      };
+          // MATCH FOUND?
+          if (extractedText.includes(cleanEnteredUtr)) {
+            // ✅ AUTO APPROVED!
+            await rtdb.ref("orders").push({
+              userId: currentUser.uid,
+              userEmail: currentUser.email || "Student",
+              materialId: pendingBuyItem.id,
+              materialTitle: pendingBuyItem.title,
+              amountPaid: currentDiscountedAmount,
+              utr: utrInput,
+              screenshot: base64Image,
+              status: "approved",
+              autoVerified: true,
+              timestamp: Date.now()
+            });
 
-      reader.readAsDataURL(file);
+            await grantAccess(currentUser.uid, pendingBuyItem);
+            alert("✅ Payment Verified & Approved! UTR number screenshot se match ho gaya. Aapke notes unlock ho gaye hain.");
+            closeModal();
+            switchTab('orders');
+          } else {
+            // ❌ DECLINED
+            await rtdb.ref("orders").push({
+              userId: currentUser.uid,
+              userEmail: currentUser.email || "Student",
+              materialId: pendingBuyItem.id,
+              materialTitle: pendingBuyItem.title,
+              amountPaid: currentDiscountedAmount,
+              utr: utrInput,
+              screenshot: base64Image,
+              status: "declined",
+              reason: "UTR not found in screenshot",
+              autoVerified: true,
+              timestamp: Date.now()
+            });
+
+            scanBox.style.display = "none";
+            submitBtn.disabled = false;
+            alert("❌ Payment Verification Failed!\n\nScreenshot me likha UTR aur aapka type kiya hua UTR number match nahi hua.\n\nKripya original payment ka saaf screenshot upload karein.");
+          }
+        };
+        reader.readAsDataURL(file);
+
+      } catch (err) {
+        scanBox.style.display = "none";
+        submitBtn.disabled = false;
+        alert("OCR Scan error: Kripya saaf photo upload karein! Error: " + err.message);
+      }
     }
 
-    // Save Admin UPI permanently into Firebase
+    async function grantAccess(userId, item) {
+      await rtdb.ref(`users/${userId}/unlockedMaterials/${item.id}`).set(true);
+      if (item.type === "Combo" && item.bundledItems) {
+        for (let subId of item.bundledItems) {
+          await rtdb.ref(`users/${userId}/unlockedMaterials/${subId}`).set(true);
+        }
+      }
+    }
+
     async function saveAdminUpiSettings() {
       const upiId = document.getElementById("adminUpiInput").value.trim();
       const payeeName = document.getElementById("adminNameInput").value.trim() || "Ankit Kumar";
@@ -996,8 +1014,7 @@
         payeeName: payeeName,
         updatedAt: Date.now()
       });
-
-      alert("UPI Settings Firebase Database me Permanently Save ho gayi!");
+      alert("UPI Settings Saved!");
     }
 
     async function uploadMaterialToFirebase() {
@@ -1011,16 +1028,11 @@
 
       let bundledItemIds = [];
       if (type === "Combo") {
-        document.querySelectorAll(".combo-check-input:checked").forEach(cb => {
-          bundledItemIds.push(cb.value);
-        });
-        if (bundledItemIds.length === 0) {
-          return alert("Combo banane ke liye kam se kam 1 material select karein!");
-        }
+        document.querySelectorAll(".combo-check-input:checked").forEach(cb => bundledItemIds.push(cb.value));
+        if (bundledItemIds.length === 0) return alert("Kam se kam 1 material select karein!");
       } else {
         if (!link) return alert("PDF link zaroori hai!");
       }
-
       if (!title) return alert("Title zaroori hai!");
 
       const saveItem = async (thumbBase64) => {
@@ -1030,12 +1042,11 @@
           bundledItems: bundledItemIds,
           createdAt: Date.now()
         });
-
         document.getElementById("newTitle").value = "";
         document.getElementById("newUrl").value = "";
         document.getElementById("newDesc").value = "";
         document.getElementById("newThumbFile").value = "";
-        alert("Published Successfully to Firebase!");
+        alert("Published Successfully!");
         switchTab('store');
       };
 
@@ -1051,14 +1062,12 @@
     function openEditModal(id) {
       const item = allMaterialsCache.find(m => m.id === id);
       if (!item) return;
-
       document.getElementById("editItemId").value = item.id;
       document.getElementById("editTitle").value = item.title;
       document.getElementById("editSub").value = item.subject;
       document.getElementById("editPrice").value = item.price;
       document.getElementById("editUrl").value = item.link || "";
       document.getElementById("editDesc").value = item.desc || "";
-
       document.getElementById("editModal").classList.add("active");
     }
 
@@ -1073,14 +1082,10 @@
       const price = parseInt(document.getElementById("editPrice").value) || 0;
       const link = document.getElementById("editUrl").value.trim();
       const desc = document.getElementById("editDesc").value.trim();
-
       if (!title) return alert("Title zaroori hai!");
 
-      await rtdb.ref(`materials/${id}`).update({
-        title, subject, price, link, desc
-      });
-
-      alert("Material Updated Successfully in Firebase!");
+      await rtdb.ref(`materials/${id}`).update({ title, subject, price, link, desc });
+      alert("Material Updated!");
       closeEditModal();
     }
 
@@ -1089,46 +1094,15 @@
       await rtdb.ref(`materials/${id}`).remove();
     }
 
-    async function approveOrder(orderKey, userId, materialId) {
-      if (!confirm("Payment verify karke unlock karein?")) return;
-
-      const material = allMaterialsCache.find(m => m.id === materialId);
-      
-      await rtdb.ref(`users/${userId}/unlockedMaterials/${materialId}`).set(true);
-
-      if (material && material.type === "Combo" && material.bundledItems) {
-        for (let subId of material.bundledItems) {
-          await rtdb.ref(`users/${userId}/unlockedMaterials/${subId}`).set(true);
-        }
-      }
-
-      await rtdb.ref(`orders/${orderKey}`).update({ status: "approved" });
-      alert("Order Approved & Material Unlocked for Student!");
-    }
-
-    async function rejectOrder(orderKey) {
-      if (!confirm("Order reject karna chahte hain?")) return;
-      await rtdb.ref(`orders/${orderKey}`).update({ status: "rejected" });
-      alert("Order Rejected!");
-    }
-
     async function createCouponCode() {
       const code = document.getElementById("couponCodeInput").value.trim().toUpperCase();
       const percent = parseInt(document.getElementById("couponPercentInput").value);
+      if (!code || isNaN(percent) || percent < 1 || percent > 100) return alert("Valid code aur percent dalein!");
 
-      if (!code || isNaN(percent) || percent < 1 || percent > 100) {
-        return alert("Valid Code aur Percentage (1-100) dalein!");
-      }
-
-      await rtdb.ref(`coupons/${code}`).set({
-        code: code,
-        percent: percent,
-        createdAt: Date.now()
-      });
-
+      await rtdb.ref(`coupons/${code}`).set({ code, percent, createdAt: Date.now() });
       document.getElementById("couponCodeInput").value = "";
       document.getElementById("couponPercentInput").value = "";
-      alert(`Coupon ${code} created in Firebase!`);
+      alert(`Coupon ${code} created!`);
     }
 
     async function deleteCoupon(code) {
@@ -1140,12 +1114,10 @@
       const box = document.getElementById("activeCouponsList");
       if (!box) return;
       box.innerHTML = "";
-
       if (!activeCouponsCache || Object.keys(activeCouponsCache).length === 0) {
         box.innerHTML = `<span style="font-size:11px; color:#888;">Koi coupon active nahi hai.</span>`;
         return;
       }
-
       Object.keys(activeCouponsCache).forEach(k => {
         const c = activeCouponsCache[k];
         const span = document.createElement("span");
@@ -1166,36 +1138,27 @@
 
     function loadAdminData() {
       renderAdminCoupons();
-
       rtdb.ref("orders").limitToLast(40).on("value", (snapshot) => {
         const box = document.getElementById("paymentRequestsBox");
         const val = snapshot.val();
         if (!val) {
-          box.innerHTML = `<p style="font-size:11.5px; color:#888;">Koi payment request nahi hai.</p>`;
+          box.innerHTML = `<p style="font-size:11.5px; color:#888;">Abhi koi payment order nahi hai.</p>`;
           return;
         }
 
-        let html = `<table class="req-table"><thead><tr><th>Item</th><th>UTR / User</th><th>Proof</th><th>Action</th></tr></thead><tbody>`;
+        let html = `<table class="req-table"><thead><tr><th>Item</th><th>UTR / User</th><th>Proof</th><th>Status</th></tr></thead><tbody>`;
         Object.keys(val).reverse().forEach(key => {
           const d = val[key];
           const ssBtn = d.screenshot 
             ? `<button class="btn-view-ss" onclick="openScreenshotPreview('${d.screenshot}')">View SS</button>` 
             : `<span style="color:#aaa;">No SS</span>`;
 
-          let statusBadge = `<span style="color:#16a34a; font-weight:bold;">Approved</span>`;
-          if (d.status === "pending") {
-            statusBadge = `
-              <div style="display:flex; flex-direction:column; gap:4px;">
-                <button class="btn-approve" onclick="approveOrder('${key}', '${d.userId}', '${d.materialId}')">Approve</button>
-                <button class="btn-reject" onclick="rejectOrder('${key}')">Reject</button>
-              </div>
-            `;
-          } else if (d.status === "rejected") {
-            statusBadge = `<span style="color:#dc2626; font-weight:bold;">Rejected</span>`;
-          }
+          let statusBadge = d.status === "approved" 
+            ? `<span style="color:#16a34a; font-weight:bold;">✅ Auto-Approved</span>` 
+            : `<span style="color:#dc2626; font-weight:bold;">❌ Declined (No Match)</span>`;
 
           html += `<tr>
-            <td><strong>${d.materialTitle}</strong><br>₹${d.amountPaid || d.amount}</td>
+            <td><strong>${d.materialTitle}</strong><br>₹${d.amountPaid}</td>
             <td><strong>${d.utr}</strong><br><small>${d.userEmail}</small></td>
             <td>${ssBtn}</td>
             <td>${statusBadge}</td>
