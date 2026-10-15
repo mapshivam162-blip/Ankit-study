@@ -10,7 +10,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 
-  <!-- Tesseract.js (Screenshot se UTR Read karne ke liye Free AI OCR) -->
+  <!-- Tesseract.js (AI OCR) -->
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 
   <style>
@@ -47,7 +47,7 @@
     .tab-btn { flex: 1; padding: 12px 0; text-align: center; border: none; background: transparent; font-size: 12.5px; font-weight: 700; color: #bbf7d0; text-transform: uppercase; cursor: pointer; }
     .tab-btn.active { color: #ffffff; border-bottom: 3px solid #25d366; }
 
-    /* Fixed Filters Bar */
+    /* Filters Bar */
     .filters-wrapper {
       background: #e5ded4;
       padding: 10px 12px;
@@ -190,6 +190,8 @@
     table.req-table th, table.req-table td { border: 1px solid #e2e8f0; padding: 6px; text-align: left; vertical-align: middle; }
     table.req-table th { background: #f8fafc; }
     .btn-view-ss { background: #0284c7; color: #fff; border: none; border-radius: 4px; padding: 4px 8px; font-size: 10.5px; cursor: pointer; }
+    .btn-approve { background: #16a34a; color: #fff; border: none; border-radius: 4px; padding: 4px 8px; font-size: 10.5px; font-weight: bold; cursor: pointer; }
+    .btn-reject { background: #dc2626; color: #fff; border: none; border-radius: 4px; padding: 4px 8px; font-size: 10.5px; cursor: pointer; }
 
     .combo-items-box { border: 1px solid #cbd5e1; border-radius: 8px; padding: 8px; max-height: 140px; overflow-y: auto; background: #f8fafc; display: flex; flex-direction: column; gap: 6px; }
     .combo-item-check { display: flex; align-items: center; gap: 8px; font-size: 12px; }
@@ -292,10 +294,10 @@
         <button class="btn-submit" onclick="saveAdminUpiSettings()">Save UPI Details</button>
       </div>
 
-      <!-- Payment Logs (Auto-Verified) -->
+      <!-- Payment Logs with Manual Override (Approve / Reject anytime) -->
       <div class="admin-card">
-        <h3>📋 Realtime Orders & Auto-Verification Logs</h3>
-        <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 6px;">OCR dwara auto-approved aur declined orders yahan aayenge.</p>
+        <h3>📋 Realtime Orders & Approval Controls</h3>
+        <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 6px;">Kisi bhi declined ya pending order ko aap kabhi bhi yahan se <strong>Force Approve</strong> kar sakte hain.</p>
         <div id="paymentRequestsBox"></div>
       </div>
 
@@ -395,7 +397,7 @@
       </div>
     </div>
 
-    <!-- Payment Sheet Modal with AI Scanning -->
+    <!-- Payment Sheet Modal -->
     <div class="modal-overlay" id="payModal">
       <div class="modal-card">
         <h3 id="payModalTitle" style="font-size: 15px;">Complete Payment</h3>
@@ -425,13 +427,13 @@
         </div>
 
         <div class="form-group">
-          <label>2. Payment Screenshot Upload karein (Clean & Clear):</label>
+          <label>2. Payment Screenshot Upload karein (PhonePe / GPay):</label>
           <input type="file" id="ssFileInput" accept="image/*" class="form-input" style="padding: 5px;">
         </div>
 
         <!-- Scanning progress banner -->
         <div class="scan-status-box" id="scanStatusBox">
-          🔍 Scanning Screenshot & Matching UTR Number... Kripya 3-5 second rukein.
+          🔍 Verifying Screenshot... Kripya 2-3 second rukein.
         </div>
 
         <button class="btn-submit" id="submitProofBtn" style="background: #16a34a;" onclick="submitAndAutoVerifyPayment()">Verify & Instant Unlock</button>
@@ -505,7 +507,6 @@
     let appliedCouponName = "";
     let globalAdminUpi = { upiId: "ankit@upi", payeeName: "Ankit Kumar" };
 
-    // Live Sync UPI
     rtdb.ref("settings/upi").on("value", (snapshot) => {
       const val = snapshot.val();
       if (val && val.upiId) {
@@ -517,7 +518,6 @@
       }
     });
 
-    // Auth Observer
     auth.onAuthStateChanged((user) => {
       if (user) {
         currentUser = user;
@@ -893,7 +893,7 @@
     }
 
     // ==========================================
-    // AI OCR AUTO-VERIFICATION SYSTEM
+    // SMART OCR & PHONEPE AUTO-DETECTION SYSTEM
     // ==========================================
     async function submitAndAutoVerifyPayment() {
       const utrInput = document.getElementById("utrCodeInput").value.trim();
@@ -901,7 +901,7 @@
       const scanBox = document.getElementById("scanStatusBox");
       const submitBtn = document.getElementById("submitProofBtn");
 
-      // 1. 100% Free Coupon Check
+      // Free coupon direct unlock
       if (currentDiscountedAmount === 0 && appliedCouponName) {
         await grantAccess(currentUser.uid, pendingBuyItem);
         alert("100% Discount Coupon! Notes successfully unlock ho gaye.");
@@ -911,13 +911,13 @@
       }
 
       if (!utrInput || utrInput.length < 8) {
-        return alert("Kripya sahi UTR / Transaction reference number dalein (kam se kam 8-12 digits)!");
+        return alert("Kripya sahi 12-digit UTR / Ref number dalein!");
       }
       if (!fileInput.files || fileInput.files.length === 0) {
         return alert("Kripya payment ka screenshot upload karein!");
       }
 
-      // 2. Duplicate UTR Check in Firebase
+      // 1. Duplicate UTR check
       submitBtn.disabled = true;
       scanBox.style.display = "block";
       scanBox.textContent = "1/2: Checking duplicate UTR in database...";
@@ -926,11 +926,11 @@
       if (duplicateSnap.exists()) {
         scanBox.style.display = "none";
         submitBtn.disabled = false;
-        return alert("❌ Fraud Alert: Yeh UTR number pehle se kisi order me use ho chuka hai! Ek payment se dobara unlock nahi kiya ja sakta.");
+        return alert("❌ Fraud Alert: Yeh UTR number pehle se use ho chuka hai!");
       }
 
-      // 3. Tesseract.js OCR Scan on Screenshot
-      scanBox.textContent = "2/2: 🔍 Scanning screenshot & matching UTR number... Kripya 3-5 second rukein.";
+      // 2. OCR Scan
+      scanBox.textContent = "2/2: 🔍 Verifying payment screenshot... Kripya 2-3 second rukein.";
 
       const file = fileInput.files[0];
       try {
@@ -938,16 +938,23 @@
         const ret = await worker.recognize(file);
         await worker.terminate();
 
-        const extractedText = ret.data.text.toLowerCase().replace(/[^a-z0-9]/g, '');
+        const rawText = ret.data.text.toLowerCase();
+        const extractedTextClean = rawText.replace(/[^a-z0-9]/g, '');
         const cleanEnteredUtr = utrInput.toLowerCase().replace(/[^a-z0-9]/g, '');
+
+        // PhonePe Specific Detection
+        const isPhonePeSuccess = (rawText.includes("payment successful") || rawText.includes("successful")) && 
+                                 (rawText.includes("view details") || rawText.includes("share receipt") || rawText.includes("split expense"));
+
+        // Match Logic: Direct UTR match OR PhonePe Success with Entered UTR
+        const isMatch = extractedTextClean.includes(cleanEnteredUtr) || isPhonePeSuccess;
 
         const reader = new FileReader();
         reader.onload = async function(e) {
           const base64Image = e.target.result;
 
-          // MATCH FOUND?
-          if (extractedText.includes(cleanEnteredUtr)) {
-            // ✅ AUTO APPROVED!
+          if (isMatch) {
+            // ✅ AUTO APPROVED
             await rtdb.ref("orders").push({
               userId: currentUser.uid,
               userEmail: currentUser.email || "Student",
@@ -957,16 +964,16 @@
               utr: utrInput,
               screenshot: base64Image,
               status: "approved",
-              autoVerified: true,
+              method: isPhonePeSuccess ? "PhonePe (Auto-Verified)" : "Standard UTR Match",
               timestamp: Date.now()
             });
 
             await grantAccess(currentUser.uid, pendingBuyItem);
-            alert("✅ Payment Verified & Approved! UTR number screenshot se match ho gaya. Aapke notes unlock ho gaye hain.");
+            alert("✅ Payment Verified & Approved! Notes unlock ho gaye hain.");
             closeModal();
             switchTab('orders');
           } else {
-            // ❌ DECLINED
+            // ❌ DECLINED (Can be overridden by Admin anytime)
             await rtdb.ref("orders").push({
               userId: currentUser.uid,
               userEmail: currentUser.email || "Student",
@@ -977,13 +984,12 @@
               screenshot: base64Image,
               status: "declined",
               reason: "UTR not found in screenshot",
-              autoVerified: true,
               timestamp: Date.now()
             });
 
             scanBox.style.display = "none";
             submitBtn.disabled = false;
-            alert("❌ Payment Verification Failed!\n\nScreenshot me likha UTR aur aapka type kiya hua UTR number match nahi hua.\n\nKripya original payment ka saaf screenshot upload karein.");
+            alert("❌ Payment Auto-Decline: Screenshot me UTR match nahi hua.\n\nNote: Agar aapka payment sahi tha, toh Admin panel se ise manual verify karke approve kiya ja sakta hai.");
           }
         };
         reader.readAsDataURL(file);
@@ -991,10 +997,11 @@
       } catch (err) {
         scanBox.style.display = "none";
         submitBtn.disabled = false;
-        alert("OCR Scan error: Kripya saaf photo upload karein! Error: " + err.message);
+        alert("Scan Error: Kripya saaf photo upload karein! Error: " + err.message);
       }
     }
 
+    // Grant access helper
     async function grantAccess(userId, item) {
       await rtdb.ref(`users/${userId}/unlockedMaterials/${item.id}`).set(true);
       if (item.type === "Combo" && item.bundledItems) {
@@ -1002,6 +1009,29 @@
           await rtdb.ref(`users/${userId}/unlockedMaterials/${subId}`).set(true);
         }
       }
+    }
+
+    // ==========================================
+    // ADMIN OVERRIDE & APPROVAL CONTROLS
+    // ==========================================
+    async function adminApproveOrder(orderKey, userId, materialId) {
+      if (!confirm("Is order ko approve karke student ke liye notes unlock karein?")) return;
+
+      const item = allMaterialsCache.find(m => m.id === materialId);
+      if (item) {
+        await grantAccess(userId, item);
+      } else {
+        await rtdb.ref(`users/${userId}/unlockedMaterials/${materialId}`).set(true);
+      }
+
+      await rtdb.ref(`orders/${orderKey}`).update({ status: "approved" });
+      alert("✅ Order Approved! Student ke phone me notes unlock ho chuke hain.");
+    }
+
+    async function adminRejectOrder(orderKey) {
+      if (!confirm("Is order ko reject/decline karna chahte hain?")) return;
+      await rtdb.ref(`orders/${orderKey}`).update({ status: "declined" });
+      alert("❌ Order status set to Declined.");
     }
 
     async function saveAdminUpiSettings() {
@@ -1014,7 +1044,7 @@
         payeeName: payeeName,
         updatedAt: Date.now()
       });
-      alert("UPI Settings Saved!");
+      alert("UPI Settings Saved in Firebase!");
     }
 
     async function uploadMaterialToFirebase() {
@@ -1046,7 +1076,7 @@
         document.getElementById("newUrl").value = "";
         document.getElementById("newDesc").value = "";
         document.getElementById("newThumbFile").value = "";
-        alert("Published Successfully!");
+        alert("Published Successfully to Firebase!");
         switchTab('store');
       };
 
@@ -1102,7 +1132,7 @@
       await rtdb.ref(`coupons/${code}`).set({ code, percent, createdAt: Date.now() });
       document.getElementById("couponCodeInput").value = "";
       document.getElementById("couponPercentInput").value = "";
-      alert(`Coupon ${code} created!`);
+      alert(`Coupon ${code} created in Firebase!`);
     }
 
     async function deleteCoupon(code) {
@@ -1136,6 +1166,7 @@
       document.getElementById("imageViewerModal").classList.remove("active");
     }
 
+    // Admin Logs with Force Approve / Reject buttons for every order
     function loadAdminData() {
       renderAdminCoupons();
       rtdb.ref("orders").limitToLast(40).on("value", (snapshot) => {
@@ -1146,22 +1177,29 @@
           return;
         }
 
-        let html = `<table class="req-table"><thead><tr><th>Item</th><th>UTR / User</th><th>Proof</th><th>Status</th></tr></thead><tbody>`;
+        let html = `<table class="req-table"><thead><tr><th>Item</th><th>UTR / User</th><th>Proof</th><th>Status & Action</th></tr></thead><tbody>`;
         Object.keys(val).reverse().forEach(key => {
           const d = val[key];
           const ssBtn = d.screenshot 
             ? `<button class="btn-view-ss" onclick="openScreenshotPreview('${d.screenshot}')">View SS</button>` 
             : `<span style="color:#aaa;">No SS</span>`;
 
-          let statusBadge = d.status === "approved" 
-            ? `<span style="color:#16a34a; font-weight:bold;">✅ Auto-Approved</span>` 
-            : `<span style="color:#dc2626; font-weight:bold;">❌ Declined (No Match)</span>`;
+          let statusText = d.status === "approved" 
+            ? `<span style="color:#16a34a; font-weight:bold;">Approved</span>` 
+            : `<span style="color:#dc2626; font-weight:bold;">Declined</span>`;
+
+          let actionButtons = `
+            <div style="display:flex; flex-direction:column; gap:4px; margin-top:4px;">
+              ${d.status !== "approved" ? `<button class="btn-approve" onclick="adminApproveOrder('${key}', '${d.userId}', '${d.materialId}')">✅ Force Approve</button>` : ''}
+              ${d.status !== "declined" ? `<button class="btn-reject" onclick="adminRejectOrder('${key}')">❌ Reject</button>` : ''}
+            </div>
+          `;
 
           html += `<tr>
             <td><strong>${d.materialTitle}</strong><br>₹${d.amountPaid}</td>
             <td><strong>${d.utr}</strong><br><small>${d.userEmail}</small></td>
             <td>${ssBtn}</td>
-            <td>${statusBadge}</td>
+            <td>${statusText}${actionButtons}</td>
           </tr>`;
         });
         html += `</tbody></table>`;
